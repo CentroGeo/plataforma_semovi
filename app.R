@@ -18,7 +18,7 @@ ui <- fluidPage(
     column(6 , tabsetPanel(id = 'TabSetPanel' ,
       tabPanel(title = 'Datos' , value = 1 ,
                radioButtons(inputId = 'incidente' , label = 'Seleccione el tipo de incidente...' ,
-                            choiceNames = c('Todos' , 'Fallecidos' , 'Lesionados' , 'Otros Eventos') , choiceValues = c(1 , 2 , 3 , 4),
+                            choiceNames = c('Fallecidos' , 'Lesionados') , choiceValues = c(2 , 3),
                             selected = 2),
                checkboxGroupInput(inputId = 'bases_elegidas' , label = 'Seleccione las bases de datos a utilizar...' ,
                                   choiceNames = c('PGJ' , 'SSC') , choiceValues = c('PGJ' , 'SSC') ,
@@ -30,7 +30,10 @@ ui <- fluidPage(
                ),
       tabPanel(title = 'Vinculación' , value = 2 , fluidRow(
         fluidRow(
-          column(12, sliderInput(inputId = 'muestras', label = 'Seleccione el porcentaje a muestrear', min = 5 , max = 100 , value = 30 , step = 5, post = '%'), htmlOutput(outputId = 'texto_muestras'))
+          column(4, sliderInput(inputId = 'muestras', label = 'Seleccione el porcentaje a muestrear', min = 5 , max = 100 , value = 30 , step = 5, post = '%'), htmlOutput(outputId = 'texto_muestras')),
+          column(2 , tags$div(style = 'height:75px' ,
+                              actionButton(inputId = 'boton_default' , label = 'Utilizar Parámetros por Defecto' ,
+                                           style = 'position: absolute; bottom:0;')))
         ), actionButton(inputId= 'boton_inicio', label = 'Iniciar')
       ),tags$div(class = 'area_vinculacion' , fluidRow(
         tags$p(id = 'NinjaA'),
@@ -79,7 +82,7 @@ server <- function(input, output , session) {
     leaflet(data = cdmx) %>%
       addTiles(urlTemplate = '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
       setView(lng = -99.152613 , lat = 19.320497, zoom = 11) %>%
-      addPolygons()
+      addPolygons(fillColor = '#DCDCDC' , fillOpacity = 0.5 , color = '#2F4F4F' , opacity = 0.75)
   })
   mapa_proxy <- leafletProxy('mapa')
   
@@ -332,13 +335,13 @@ server <- function(input, output , session) {
                tags$h3('Procuraduría General de Justicia (PGJ)'))
       insertUI(selector = '#NinjaB', where = 'afterEnd', 
                fluidRow(
-                 column(6, sliderInput(inputId = 'radio' , label = 'Seleccione un radio de búsqueda', min = 100 , max = 1000 , value = 250 , step = 50 , post = ' m')),
-                 column(6, sliderInput(inputId = 'tiempo' , label = 'Seleccione un intervalo de búsqueda', min = 1 , max = 12 , value = 3, step = 1 , post = ' h'))
+                 column(4, sliderInput(inputId = 'radio' , label = 'Seleccione un radio de búsqueda', min = 100 , max = 1000 , value = 250 , step = 50 , post = ' m')),
+                 column(4, sliderInput(inputId = 'tiempo' , label = 'Seleccione un intervalo de búsqueda', min = 30 , max = 180 , value = 60, step = 30 , post = ' min'))
                ))
       insertUI(selector = '#NinjaC', where = 'afterEnd',
                fluidRow(
-                 column(6 , actionButton(inputId = 'boton_siguiente' , label = 'Vincular Eventos')),
-                 column(6 , actionButton(inputId = 'boton_inutil' , label = 'Evento No Encontrado'))
+                 column(2 , actionButton(inputId = 'boton_siguiente' , label = 'Vincular Eventos')),
+                 column(2 , actionButton(inputId = 'boton_inutil' , label = 'Evento No Encontrado'))
                ))
       insertUI(selector = '#NinjaD', where = 'afterEnd',
                tags$h3('Secretaría de Seguridad Ciudadana (SSC)'))
@@ -373,7 +376,7 @@ server <- function(input, output , session) {
     seleccion_ssc <- filter(seleccion_ssc , base_original == 'SSC')
     # =
     tiempo_base <- muestra_pgj$data[loop$i,]$timestamp
-    tmp_time <- input$tiempo / 24
+    tmp_time <- input$tiempo / 1440
     min_tiempo <- tiempo_base - tmp_time
     max_tiempo <- tiempo_base + tmp_time
     seleccion_ssc <- filter(seleccion_ssc , timestamp >= min_tiempo & timestamp <= max_tiempo)
@@ -388,7 +391,7 @@ server <- function(input, output , session) {
   # =
   observeEvent(input$mapa_marker_click , {
     tiempo_base <- muestra_pgj$data[loop$i,]$timestamp
-    tmp_time <- input$tiempo / 24
+    tmp_time <- input$tiempo / 1440
     min_tiempo <- tiempo_base - tmp_time
     max_tiempo <- tiempo_base + tmp_time
     # =
@@ -396,7 +399,12 @@ server <- function(input, output , session) {
   })
   # =
   observeEvent(input$boton_siguiente , {
-    if (loop$i < nrow(muestra_pgj$data)) {
+    removeUI(selector = '.error_vinculacion')
+    if (is.null(candidato_ssc$data)) {
+      insertUI(selector = '#NinjaD', where = 'afterEnd',
+               tags$code('Por favor, seleccione un evento de la SSC para realizar la vinculación' , class = 'error_vinculacion'))
+    }
+    else if (loop$i < nrow(muestra_pgj$data)) {
       bases_de_datos$unificada[bases_de_datos$unificada$id_global == muestra_pgj$data[loop$i,]$id_global , 'id_SSC'] <- candidato_ssc$data$X
       # =
       tmp_pgj <- filter(bases_de_datos$unificada_sf , id_global == muestra_pgj$data[loop$i,]$id_global)
@@ -438,13 +446,14 @@ server <- function(input, output , session) {
       # =
       mapa_proxy %>%
         removeShape(layerId = 'circulo') %>%
-        clearMarkers() %>%
-        addPolygons(data = cdmx) %>%
-        flyTo(lng = -99.152613 , lat = 19.320497, zoom = 11)
+        addPolygons(data = cdmx , fillColor = '#DCDCDC' , fillOpacity = 0.5 , color = '#2F4F4F' , opacity = 0.75) %>%
+        flyTo(lng = -99.152613 , lat = 19.320497, zoom = 11) %>%
+        clearMarkers()
     }
   })
   # =
   observeEvent(input$boton_inutil , {
+    removeUI(selector = '.error_vinculacion')
     if (loop$i < nrow(muestra_pgj$data)) {
       loop$i <- loop$i + 1
       longitud <- muestra_pgj$data[loop$i,]$lon
@@ -465,9 +474,9 @@ server <- function(input, output , session) {
       # =
       mapa_proxy %>%
         removeShape(layerId = 'circulo') %>%
-        clearMarkers() %>%
-        addPolygons(data = cdmx) %>%
-        flyTo(lng = -99.152613 , lat = 19.320497, zoom = 11)
+        addPolygons(data = cdmx , fillColor = '#DCDCDC' , fillOpacity = 0.5 , color = '#2F4F4F' , opacity = 0.75) %>%
+        flyTo(lng = -99.152613 , lat = 19.320497, zoom = 11) %>%
+        clearMarkers()
     }
   })
   # =
@@ -551,6 +560,47 @@ server <- function(input, output , session) {
     removeUI(selector='#div_balgoritmo')
     #write.csv(resultado$final , 'data/final_dentro.csv')
   })
+  # =
+  observeEvent(input$boton_default , {
+    distancia_final <- 600    # 600 m
+    tiempo_final <- 0.1041667 # 2.5 h
+    # =
+    # =
+    algoritmo <- function(fila) {
+      if (fila['base_original'][[1]] == 'SSC') {
+        return(as.integer(fila['id_original']))
+      } else if (!is.na(fila['id_SSC'][[1]])) {
+        return(as.integer(fila['id_SSC']))
+      } else {
+        shp <- filter(bases_de_datos$unificada_sf , id_global == as.integer(fila['id_global']))
+        # =
+        tmp_within <- st_is_within_distance(shp , bases_de_datos$unificada_sf , distancia_final)
+        posibles <- bases_de_datos$unificada[tmp_within[[1]],]
+        # =
+        posibles <- filter(posibles , id_global != as.integer(fila['id_global']))
+        posibles <- filter(posibles , base_original == 'SSC')
+        # =
+        min_tiempo <- shp$timestamp - tiempo_final
+        max_tiempo <- shp$timestamp + tiempo_final
+        posibles <- filter(posibles , timestamp >= min_tiempo & timestamp <= max_tiempo)
+        # =
+        if (length(posibles$id_original) > 1) {
+          posibles <- posibles[which.min(posibles$timestamp - shp$timestamp) , ]
+          return(posibles$id_original)
+        } else {
+          return(posibles$id_original)
+        }
+      }
+    }
+    # =
+    bases_de_datos$unificada$id_SSC <- as.numeric(apply(bases_de_datos$unificada , MARGIN = 1 , FUN = algoritmo))
+    # =
+    tmp <- bases_de_datos$unificada %>% filter(base_original == 'PGJ') %>% select(id_original , id_SSC)
+    tmp <- merge(x = bases_de_datos$pgj , y = tmp , by.x = 'X' , by.y = 'id_original')
+    resultado$final <- merge(x = tmp , y = bases_de_datos$ssc , by.x = 'id_SSC' , by.y = 'X')
+    # =
+    bases_de_datos$unificada$id_SSC <- replicate(nrow(bases_de_datos$unificada) , as.integer(NA))
+  })
   # ===== PARTE 3 - MUESTRA DE RESULTADOS =====
   observeEvent(input$boton_mostrar , {
     insertUI(selector = '#NinjaG' , where = 'afterEnd' ,
@@ -575,15 +625,15 @@ server <- function(input, output , session) {
     if (is.null(resultado$final)) {
       NULL
     } else if (input$incidente == 2) {
-      paste0('Total de Eventos Ocurridos -', nrow(bases_de_datos$pgj) , '\n',
-             'Número de Vínculos logrados - ', nrow(resultado$final) , '\n',
-             'Número de Vínculos no logrados - ', sum(bases_de_datos$ssc$total_occisos) - nrow(resultado$final) , '\n',
-             'Número de eventos en PGJ sin registro en SSC -', nrow(bases_de_datos$pgj) - sum(bases_de_datos$ssc$total_occisos) , '\n')
+      paste0('Total de Eventos Ocurridos: ', nrow(bases_de_datos$pgj) , '\n',
+             'Número de Vínculos logrados: ', nrow(resultado$final) , '\n',
+             'Número de Vínculos no logrados: ', sum(bases_de_datos$ssc$total_occisos) - nrow(resultado$final) , '\n',
+             'Número de eventos en PGJ sin registro en SSC: ', nrow(bases_de_datos$pgj) - sum(bases_de_datos$ssc$total_occisos) , '\n')
     } else {
-      paste0('Total de Eventos Ocurridos - ', sum(bases_de_datos$ssc$total_lesionados) , '\n',
-             'Número de Vínculos logrados - ', nrow(resultado$final) , '\n',
-             'Número de Vínculos no logrados - ', nrow(bases_de_datos$pgj) - nrow(resultado$final) , '\n',
-             'Número de eventos en SSC sin registro en PGJ -', sum(bases_de_datos$ssc$total_lesionados) - nrow(bases_de_datos$pgj) , '\n')
+      paste0('Total de Eventos Ocurridos: ', sum(bases_de_datos$ssc$total_lesionados) , '\n',
+             'Número de Vínculos logrados: ', nrow(resultado$final) , '\n',
+             'Número de Vínculos no logrados: ', nrow(bases_de_datos$pgj) - nrow(resultado$final) , '\n',
+             'Número de eventos en SSC sin registro en PGJ: ', sum(bases_de_datos$ssc$total_lesionados) - nrow(bases_de_datos$pgj) , '\n')
     }
   })
   # =
@@ -607,7 +657,7 @@ server <- function(input, output , session) {
       etiquetas <- c('PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC', 'FINAL')
       tmp <- data.frame(meses , etiquetas , muertes)
       ggplot(data = tmp , aes(x = meses , y = muertes , colour = etiquetas)) +
-        geom_col(fill = 'grey' , size = 1.5 , position = 'dodge')
+        geom_line()
     } else {
       muertes_ssc <- c(sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'ENERO')$total_lesionados) ,
                        sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'FEBRERO')$total_lesionados) ,
@@ -625,13 +675,13 @@ server <- function(input, output , session) {
       etiquetas <- c('PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC', 'FINAL')
       tmp <- data.frame(meses , etiquetas , muertes)
       ggplot(data = tmp , aes(x = meses , y = muertes , colour = etiquetas)) +
-        geom_col(fill = 'grey' , size = 1.5 , position = 'dodge')
+        geom_path()
     }
   })
   # =
   output$grafica_b <- renderPlot({
     if (input$incidente == 2) {
-      max_value = 25
+      max_value = 30
     } else {
       max_value = 50
     }
@@ -640,7 +690,7 @@ server <- function(input, output , session) {
     } else if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
       tmp <- count(select(filter(resultado$final , mes == 'ENERO') , 'mes' , 'identidad'), mes , identidad)
       ggplot(data = tmp , aes(x = mes , y = n , colour = identidad)) +
-        geom_col(size = 1.5, position = 'dodge') +
+        geom_line(size = 1.5, position = 'dodge') +
         ylim(0 , max_value)
     } else if (between(input$grafica_a_click$x , 1.5 , 2.5)) {
       tmp <- count(select(filter(resultado$final , mes == 'FEBRERO') , 'mes' , 'identidad'), mes , identidad)
@@ -676,17 +726,17 @@ server <- function(input, output , session) {
         muertes_final <- count(filter(resultado$final , mes == string_mes))$n
       }
       paste0('Resultados para el mes de ', string_mes , '\n',
-             'Total de Eventos Ocurridos -', muertes_pgj , '\n',
-             'Número de Vínculos logrados - ', muertes_final , '\n',
-             'Número de Vínculos no logrados - ', muertes_ssc - muertes_final , '\n',
-             'Número de eventos en PGJ sin registro en SSC -', muertes_pgj - muertes_ssc , '\n',
+             'Total de Eventos Ocurridos: ', muertes_pgj , '\n',
+             'Número de Vínculos logrados: ', muertes_final , '\n',
+             'Número de Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
+             'Número de eventos en PGJ sin registro en SSC: ', muertes_pgj - muertes_ssc , '\n',
              '===================================\n',
              'Número de Eventos por Naturaleza del Fallecido\n',
-             'Ciclista -', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
-             'Conductor - ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
-             'Motociclista - ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
-             'Pasajero - ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
-             'Peatón - ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
     } else {
       if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
         string_mes <- 'ENERO'
@@ -705,17 +755,17 @@ server <- function(input, output , session) {
         muertes_final <- count(filter(resultado$final , mes == string_mes))$n
       }
       paste0('Resultados para el mes de ', string_mes , '\n',
-             'Total de Eventos Ocurridos - ', muertes_ssc , '\n',
-             'Número de Vínculos logrados - ', muertes_final , '\n',
-             'Número de Vínculos no logrados - ', muertes_pgj - muertes_final , '\n',
-             'Número de eventos en SSC sin registro en PGJ -', muertes_ssc - muertes_pgj , '\n',
+             'Total de Eventos Ocurridos: ', muertes_ssc , '\n',
+             'Número de Vínculos logrados: ', muertes_final , '\n',
+             'Número de Vínculos no logrados: ', muertes_pgj - muertes_final , '\n',
+             'Número de eventos en SSC sin registro en PGJ: ', muertes_ssc - muertes_pgj , '\n',
              '===================================\n',
              'Número de Eventos por Naturaleza del Lesionado\n',
-             'Ciclista -', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
-             'Conductor - ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
-             'Motociclista - ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
-             'Pasajero - ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
-             'Peatón - ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
     }
   })
 }
