@@ -47,7 +47,7 @@ ui <- fluidPage(
         tableOutput(outputId = 'tabla_ssc')
       )), fluidRow(
         tags$p(id = 'NinjaE'),
-        dataTableOutput(outputId = 'tabla_vinculos'),
+        tableOutput(outputId = 'tabla_vinculos'),
         tags$p(id = 'NinjaF')
       )),
       tabPanel(title = 'Resultados' , value = 3 , fluidRow(
@@ -96,7 +96,7 @@ server <- function(input, output , session) {
         logs$log_TabA <- append(logs$log_TabA , 'No puede encontrarse el archivo "PGJ.csv" o "PGJ.xlsx"; favor de colocarlo en la carpeta correspondiente.\n')
       } else {
         if (file.exists('data/PGJ.csv')) {
-          bases_de_datos$pgj <- read.csv("data/PGJ.csv")
+          bases_de_datos$pgj <- read.csv("data/PGJ.csv" , encoding = 'UTF-8')
           if (input$incidente == 2) {
             bases_de_datos$pgj <- filter(bases_de_datos$pgj , calidad_juridica == 'CADAVER' | calidad_juridica == 'FALLECIDO')
           } else if (input$incidente == 3) {
@@ -134,7 +134,7 @@ server <- function(input, output , session) {
         logs$log_TabA <- append(logs$log_TabA , 'No puede encontrarse el archivo "SSC.csv" o "SSC.xlsx"; favor de colocarlo en la carpeta correspondiente.\n')
       } else {
         if (file.exists('data/SSC.csv')) {
-          bases_de_datos$ssc <- read.csv("data/SSC.csv")
+          bases_de_datos$ssc <- read.csv("data/SSC.csv" , encoding = 'UTF-8')
           if (input$incidente == 2) {
             bases_de_datos$ssc <- filter(bases_de_datos$ssc , total_occisos != 0)
           } else if (input$incidente == 3) {
@@ -509,7 +509,7 @@ server <- function(input, output , session) {
     }
   })
   # =
-  output$tabla_vinculos <- renderDataTable({
+  output$tabla_vinculos <- renderTable({
     if (is.null(resultado$data)) {
       NULL
     } else {
