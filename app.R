@@ -514,7 +514,7 @@ server <- function(input, output , session) {
       NULL
     } else {
       resultado$data %>% select('fecha_de_hechos','hora_de_hechos','municipio','colonia.x','delito','tipo_de_evento','identidad','calidad_juridica') %>%
-        rename('Fecha'='fecha_de_hechos','Hora'='hora_de_hechos','Alcaldía'='municipio','Colonia'='colonia.x','Delito PGJ' = 'delito','Tipo de Evento SSC'='tipo_de_evento','Identidad SSC'='identidad','Calidad Jurídica PGJ'='calidad_juridica')
+        rename('Fecha'='fecha_de_hechos','Hora'='hora_de_hechos','Alcaldia'='municipio','Colonia'='colonia.x','Delito PGJ' = 'delito','Tipo de Evento SSC'='tipo_de_evento','Identidad SSC'='identidad','Calidad Juridica PGJ'='calidad_juridica')
     }
   })
   # =
@@ -657,7 +657,9 @@ server <- function(input, output , session) {
       etiquetas <- c('PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC', 'FINAL')
       tmp <- data.frame(meses , etiquetas , muertes)
       ggplot(data = tmp , aes(x = meses , y = muertes , colour = etiquetas)) +
-        geom_line()
+        geom_col(size = 1.5, position = 'dodge')
+      # ggplot(tmp , aes(muertes)) +
+      #   geom_freqpoly()
     } else {
       muertes_ssc <- c(sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'ENERO')$total_lesionados) ,
                        sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'FEBRERO')$total_lesionados) ,
@@ -690,7 +692,7 @@ server <- function(input, output , session) {
     } else if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
       tmp <- count(select(filter(resultado$final , mes == 'ENERO') , 'mes' , 'identidad'), mes , identidad)
       ggplot(data = tmp , aes(x = mes , y = n , colour = identidad)) +
-        geom_line(size = 1.5, position = 'dodge') +
+        geom_col(size = 1.5, position = 'dodge') +
         ylim(0 , max_value)
     } else if (between(input$grafica_a_click$x , 1.5 , 2.5)) {
       tmp <- count(select(filter(resultado$final , mes == 'FEBRERO') , 'mes' , 'identidad'), mes , identidad)
