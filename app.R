@@ -4,6 +4,7 @@ library(tidyverse)
 library(leaflet)
 
 library(chron)
+library(lubridate)
 library(readxl)
 
 # ===== OPERACIONES INICIALES =====
@@ -52,13 +53,8 @@ ui <- fluidPage(
       )),
       tabPanel(title = 'Resultados' , value = 3 , fluidRow(
         tags$p(id = 'NinjaG'),
-        tags$div(id = 'div_bmostrar' , actionButton(inputId = 'boton_mostrar' , label = 'Mostrar Tabla de Vínculos Final')),
         verbatimTextOutput(outputId = 'texto_resultado'),
-        plotOutput(outputId = 'grafica_a' , click = 'grafica_a_click'),
-        fluidRow(
-          column(6, plotOutput(outputId = 'grafica_b')),
-          column(6, verbatimTextOutput(outputId = 'texto_grafica_b'))
-        )
+        tags$p(id = 'NinjaH')
       ))
     ))
   )
@@ -513,8 +509,11 @@ server <- function(input, output , session) {
     if (is.null(resultado$data)) {
       NULL
     } else {
-      resultado$data %>% select('fecha_de_hechos','hora_de_hechos','municipio','colonia.x','delito','tipo_de_evento','identidad','calidad_juridica') %>%
-        rename('Fecha'='fecha_de_hechos','Hora'='hora_de_hechos','Alcaldia'='municipio','Colonia'='colonia.x','Delito PGJ' = 'delito','Tipo de Evento SSC'='tipo_de_evento','Identidad SSC'='identidad','Calidad Juridica PGJ'='calidad_juridica')
+      tmp <- resultado$data %>% select('fecha_de_hechos','hora_de_hechos','municipio','colonia.x','delito','tipo_de_evento','identidad','calidad_juridica')
+      tmp$fecha_de_hechos <- as.character(dates(tmp$fecha_de_hechos))
+      tmp$hora_de_hechos <- as.character(times(tmp$hora_de_hechos))
+      tmp %>% rename('Fecha'='fecha_de_hechos','Hora'='hora_de_hechos','Alcaldia'='municipio','Colonia'='colonia.x','Delito PGJ' = 'delito','Tipo de Evento SSC'='tipo_de_evento','Identidad SSC'='identidad','Calidad Juridica PGJ'='calidad_juridica')
+      
     }
   })
   # =
@@ -602,11 +601,31 @@ server <- function(input, output , session) {
     bases_de_datos$unificada$id_SSC <- replicate(nrow(bases_de_datos$unificada) , as.integer(NA))
   })
   # ===== PARTE 3 - MUESTRA DE RESULTADOS =====
+  observe({
+    if(!is.null(resultado$final) & is.null(loop$k)) {
+      insertUI(selector = '#NinjaG' , where = 'afterEnd' , fluidRow(
+        tags$div(id = 'div_bmostrar' , actionButton(inputId = 'boton_mostrar' , label = 'Mostrar Tabla de Vínculos Final')),
+        tags$div(style = 'height:10px'),
+        tags$div(id = 'div_bdescargar' , actionButton(inputId = 'boton_descargar' , label = 'Descargar Tabla de Vínculos Final')),
+        tags$div(style = 'height:10px'))
+      )
+      insertUI(selector = '#NinjaH' , where = 'afterEnd' , fluidRow(
+               tags$div(id = 'div_mostrartotales' ,
+                        checkboxInput(inputId = 'totales_grafica' , label = 'Gráficas con Totales' , value = FALSE)),
+               plotOutput(outputId = 'grafica_a' , click = 'grafica_a_click' , height = '450px'),
+               column(4 , verbatimTextOutput(outputId = 'texto_enero')),
+               column(4 , verbatimTextOutput(outputId = 'texto_febrero')),
+               column(4 , verbatimTextOutput(outputId = 'texto_marzo')))
+      )
+      loop$k <- 1
+    }
+  })
+  # =
   observeEvent(input$boton_mostrar , {
     insertUI(selector = '#NinjaG' , where = 'afterEnd' ,
              tags$div(id = 'div_bocultar' , fluidRow(
                actionButton(inputId = 'boton_ocultar' , label = 'Ocultar Tabla de Vínculos Final'),
-               dataTableOutput(outputId = 'tabla_final')
+               tableOutput(outputId = 'tabla_final')
              )))
     removeUI(selector = '#div_bmostrar')
   })
@@ -617,8 +636,14 @@ server <- function(input, output , session) {
     removeUI(selector = '#div_bocultar')
   })
   # =
-  output$tabla_final <- renderDataTable({
+  output$tabla_final <- renderTable({
     resultado$final
+  })
+  # =
+  observeEvent(input$boton_descargar , {
+    if (input$boton_descargar > 0) {
+      write.csv(resultado$final , 'vinculacion_final.csv')
+    }
   })
   # =
   output$texto_resultado <- renderText({
@@ -640,129 +665,83 @@ server <- function(input, output , session) {
   output$grafica_a <- renderPlot({
     if (is.null(resultado$final)) {
       NULL
-    } else if (input$incidente == 2) {
-      muertes_ssc <- c(sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == 'ENERO')$total_occisos) ,
-                       sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == 'FEBRERO')$total_occisos) ,
-                       sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == 'MARZO')$total_occisos))
-      muertes_pgj <- c(count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n ,
-                       count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n ,
-                       count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n)
-      muertes_final <- c(count(filter(resultado$final , mes == 'ENERO'))$n ,
-                         count(filter(resultado$final , mes == 'FEBRERO'))$n ,
-                         count(filter(resultado$final , mes == 'MARZO'))$n)
-      muertes <- c(muertes_pgj[1] , muertes_ssc[1] , muertes_final[1] ,
-                   muertes_pgj[2] , muertes_ssc[2] , muertes_final[2] ,
-                   muertes_pgj[3] , muertes_ssc[3] , muertes_final[3])
-      meses <- c(replicate(3 , 'ENERO') , replicate(3 , 'FEBRERO') , replicate(3 , 'MARZO'))
-      etiquetas <- c('PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC', 'FINAL')
-      tmp <- data.frame(meses , etiquetas , muertes)
-      ggplot(data = tmp , aes(x = meses , y = muertes , colour = etiquetas)) +
-        geom_col(size = 1.5, position = 'dodge')
-      # ggplot(tmp , aes(muertes)) +
-      #   geom_freqpoly()
     } else {
-      muertes_ssc <- c(sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'ENERO')$total_lesionados) ,
-                       sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'FEBRERO')$total_lesionados) ,
-                       sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == 'MARZO')$total_lesionados))
-      muertes_pgj <- c(count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n ,
-                       count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n ,
-                       count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n)
-      muertes_final <- c(count(filter(resultado$final , mes == 'ENERO'))$n ,
-                         count(filter(resultado$final , mes == 'FEBRERO'))$n ,
-                         count(filter(resultado$final , mes == 'MARZO'))$n)
-      muertes <- c(muertes_pgj[1] , muertes_ssc[1] , muertes_final[1] ,
-                   muertes_pgj[2] , muertes_ssc[2] , muertes_final[2] ,
-                   muertes_pgj[3] , muertes_ssc[3] , muertes_final[3])
-      meses <- c(replicate(3 , 'ENERO') , replicate(3 , 'FEBRERO') , replicate(3 , 'MARZO'))
-      etiquetas <- c('PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC' , 'FINAL' ,'PGJ' , 'SSC', 'FINAL')
-      tmp <- data.frame(meses , etiquetas , muertes)
-      ggplot(data = tmp , aes(x = meses , y = muertes , colour = etiquetas)) +
-        geom_path()
-    }
-  })
-  # =
-  output$grafica_b <- renderPlot({
-    if (input$incidente == 2) {
-      max_value = 30
-    } else {
-      max_value = 50
-    }
-    if (is.null(input$grafica_a_click)) {
-      NULL
-    } else if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
-      tmp <- count(select(filter(resultado$final , mes == 'ENERO') , 'mes' , 'identidad'), mes , identidad)
-      ggplot(data = tmp , aes(x = mes , y = n , colour = identidad)) +
-        geom_col(size = 1.5, position = 'dodge') +
-        ylim(0 , max_value)
-    } else if (between(input$grafica_a_click$x , 1.5 , 2.5)) {
-      tmp <- count(select(filter(resultado$final , mes == 'FEBRERO') , 'mes' , 'identidad'), mes , identidad)
-      ggplot(data = tmp , aes(x = mes , y = n , colour = identidad)) +
-        geom_col(size = 1.5, position = 'dodge') +
-        ylim(0 , max_value)
-    } else if (between(input$grafica_a_click$x , 2.5 , 3.5)) {
-      tmp <- count(select(filter(resultado$final , mes == 'MARZO') , 'mes' , 'identidad'), mes , identidad)
-      ggplot(data = tmp , aes(x = mes , y = n , colour = identidad)) +
-        geom_col(size = 1.5, position = 'dodge') +
-        ylim(0 , max_value)
-    }
-  })
-  # =
-  output$texto_grafica_b <- renderText({
-    if (is.null(input$grafica_a_click)) {
-      NULL
-    } else if (input$incidente == 2) {
-      if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
-        string_mes <- 'ENERO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
-      } else if (between(input$grafica_a_click$x , 1.5 , 2.5)) {
-        string_mes <- 'FEBRERO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
-      } else if (between(input$grafica_a_click$x , 2.5 , 3.5)) {
-        string_mes <- 'MARZO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
+      tmp <- count(resultado$final , month(timestamp.x) , identidad , .drop = FALSE) %>% rename('mes' = 'month(timestamp.x)')
+      tmp$identidad <- as.character(tmp$identidad)
+      if (input$totales_grafica == TRUE) {
+        tmp2 = data.frame(mes = as.double() , identidad = as.character() , n = as.integer())
+        tmp2$identidad <- as.character(tmp2$identidad)
+        # =
+        tmp2[nrow(tmp2) + 1 ,] = list(1 , 'Toltal Final' , count(resultado$final , month(timestamp.x))[1,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(2 , 'Toltal Final' , count(resultado$final , month(timestamp.x))[2,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(3 , 'Toltal Final' , count(resultado$final , month(timestamp.x))[3,]$n)
+        # =
+        tmp2[nrow(tmp2) + 1 ,] = list(1 , 'Toltal PGJ' , count(bases_de_datos$pgj , month(timestamp))[1,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(2 , 'Toltal PGJ' , count(bases_de_datos$pgj , month(timestamp))[2,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(3 , 'Toltal PGJ' , count(bases_de_datos$pgj , month(timestamp))[3,]$n)
+        # =
+        tmp2[nrow(tmp2) + 1 ,] = list(1 , 'Toltal SSC' , count(bases_de_datos$ssc , month(timestamp))[1,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(2 , 'Toltal SSC' , count(bases_de_datos$ssc , month(timestamp))[2,]$n)
+        tmp2[nrow(tmp2) + 1 ,] = list(3 , 'Toltal SSC' , count(bases_de_datos$ssc , month(timestamp))[3,]$n)
+        # =
+        ggplot() +
+          geom_line(data = tmp , aes(x = mes , y = n , color = identidad) , size = 1 , linetype = 'longdash') +
+          geom_line(data = tmp2 , aes(x = mes , y = n , color = identidad) , size = 2.5) +
+          scale_color_manual(values = c('#fd827d','#a9aa31','#03bf81','#00b0f3','#ec8fee' , '#f03b20' , '#feb24c' , '#ffeda0'),
+                             limits = c('CICLISTA' , 'CONDUCTOR' , 'MOTOCICLISTA' , 'PASAJERO' , 'PEATON' , 'Toltal Final' , 'Toltal PGJ' , 'Toltal SSC'),
+                             name = 'Identidad de Víctima' ,
+                             labels = c('Ciclista' , 'Conductor' , 'Motociclista' , 'Pasajero' , 'Peatón' , 'Toltal Final' , 'Toltal PGJ' , 'Toltal SSC')) +
+          scale_x_continuous(breaks = c(1 , 2 , 3),
+                             minor_breaks = NULL,
+                             labels = c('Enero' , 'Febrero' , 'Marzo')) +
+          labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+      } else {
+        ggplot(data = tmp , aes(x = mes , y = n , color = identidad)) +
+          geom_line(size = 2.5) +
+          scale_color_manual(values = c('#fd827d','#a9aa31','#03bf81','#00b0f3','#ec8fee'),
+                             limits = c('CICLISTA' , 'CONDUCTOR' , 'MOTOCICLISTA' , 'PASAJERO' , 'PEATON'),
+                             name = 'Identidad de Víctima' ,
+                             labels = c('Ciclista' , 'Conductor' , 'Motociclista' , 'Pasajero' , 'Peatón')) +
+          scale_x_continuous(breaks = c(1 , 2 , 3),
+                             minor_breaks = NULL,
+                             labels = c('Enero' , 'Febrero' , 'Marzo')) +
+          labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
       }
+    }
+  })
+  # =
+  output$texto_enero <- renderText({
+    if (is.null(resultado$final)) {
+      NULL
+    } else if (input$incidente == 2) {
+      string_mes <- 'ENERO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
       paste0('Resultados para el mes de ', string_mes , '\n',
              'Total de Eventos Ocurridos: ', muertes_pgj , '\n',
-             'Número de Vínculos logrados: ', muertes_final , '\n',
-             'Número de Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
-             'Número de eventos en PGJ sin registro en SSC: ', muertes_pgj - muertes_ssc , '\n',
-             '===================================\n',
-             'Número de Eventos por Naturaleza del Fallecido\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
+             'Eventos en PGJ s/r en SSC: ', muertes_pgj - muertes_ssc , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
              'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
              'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
              'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
              'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
              'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
     } else {
-      if (between(input$grafica_a_click$x , 0.5 , 1.5)) {
-        string_mes <- 'ENERO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
-      } else if (between(input$grafica_a_click$x , 1.5 , 2.5)) {
-        string_mes <- 'FEBRERO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
-      } else if (between(input$grafica_a_click$x , 2.5 , 3.5)) {
-        string_mes <- 'MARZO'
-        muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n
-        muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
-        muertes_final <- count(filter(resultado$final , mes == string_mes))$n
-      }
+      string_mes <- 'ENERO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('01/01/2018') & timestamp <= dates('01/31/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
       paste0('Resultados para el mes de ', string_mes , '\n',
              'Total de Eventos Ocurridos: ', muertes_ssc , '\n',
-             'Número de Vínculos logrados: ', muertes_final , '\n',
-             'Número de Vínculos no logrados: ', muertes_pgj - muertes_final , '\n',
-             'Número de eventos en SSC sin registro en PGJ: ', muertes_ssc - muertes_pgj , '\n',
-             '===================================\n',
-             'Número de Eventos por Naturaleza del Lesionado\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_pgj - muertes_final , '\n',
+             'Eventos en PGJ s/r en SSC: ', muertes_ssc - muertes_pgj , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
              'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
              'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
              'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
@@ -770,6 +749,87 @@ server <- function(input, output , session) {
              'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
     }
   })
+  # =
+  output$texto_febrero <- renderText({
+    if (is.null(resultado$final)) {
+      NULL
+    } else if (input$incidente == 2) {
+      string_mes <- 'FEBRERO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
+      paste0('Resultados para el mes de ', string_mes , '\n',
+             'Total de Eventos Ocurridos: ', muertes_pgj , '\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
+             'Eventos en PGJ s/r en SSC: ', muertes_pgj - muertes_ssc , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+    } else {
+      string_mes <- 'FEBRERO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('02/01/2018') & timestamp <= dates('02/28/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
+      paste0('Resultados para el mes de ', string_mes , '\n',
+             'Total de Eventos Ocurridos: ', muertes_ssc , '\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_pgj - muertes_final , '\n',
+             'Eventos en SSC s/r en PGJ: ', muertes_ssc - muertes_pgj , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+    }
+  })
+  # =
+  output$texto_marzo <- renderText({
+    if (is.null(resultado$final)) {
+      NULL
+    } else if (input$incidente == 2) {
+      string_mes <- 'MARZO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_occisos != 0 & mes == string_mes)$total_occisos)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
+      paste0('Resultados para el mes de ', string_mes , '\n',
+             'Total de Eventos Ocurridos: ', muertes_pgj , '\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
+             'Eventos en PGJ s/r en SSC: ', muertes_pgj - muertes_ssc , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+    } else {
+      string_mes <- 'MARZO'
+      muertes_pgj <- count(filter(bases_de_datos$pgj , timestamp >= dates('03/01/2018') & timestamp <= dates('03/31/2018')))$n
+      muertes_ssc <- sum(filter(bases_de_datos$ssc , total_lesionados != 0 & mes == string_mes)$total_lesionados)
+      muertes_final <- count(filter(resultado$final , mes == string_mes))$n
+      paste0('Resultados para el mes de ', string_mes , '\n',
+             'Total de Eventos Ocurridos: ', muertes_ssc , '\n',
+             'Vínculos logrados: ', muertes_final , '\n',
+             'Vínculos no logrados: ', muertes_pgj - muertes_final , '\n',
+             'Eventos en SSC s/r en PGJ: ', muertes_ssc - muertes_pgj , '\n',
+             '================================\n',
+             'Eventos p/ Identidad\n',
+             'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
+             'Conductor: ', count(filter(resultado$final , mes == string_mes & identidad == 'CONDUCTOR'))$n, '\n',
+             'Motociclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'MOTOCICLISTA'))$n, '\n',
+             'Pasajero: ', count(filter(resultado$final , mes == string_mes & identidad == 'PASAJERO'))$n, '\n',
+             'Peatón: ', count(filter(resultado$final , mes == string_mes & identidad == 'PEATON'))$n)
+    }
+  })
+  # =
 }
 
 shinyApp(ui = ui, server = server)
