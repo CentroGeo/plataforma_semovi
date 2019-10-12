@@ -9,7 +9,7 @@ library(readxl)
 
 # ===== OPERACIONES INICIALES =====
 
-cdmx <- read_sf(dsn = "data/", layer = "cdmx")
+cdmx <- read_sf(dsn = "data/cdmx.shp", layer = "cdmx")
 
 # ===== PÁGINA WEB =====
 
@@ -722,7 +722,7 @@ server <- function(input, output , session) {
              'Total de Eventos Ocurridos: ', muertes_pgj , '\n',
              'Vínculos logrados: ', muertes_final , '\n',
              'Vínculos no logrados: ', muertes_ssc - muertes_final , '\n',
-             'Eventos en PGJ s/r en SSC: ', muertes_pgj - muertes_ssc , '\n',
+             'Eventos en SSC s/r en PGJ: ', muertes_pgj - muertes_ssc , '\n',
              '================================\n',
              'Eventos p/ Identidad\n',
              'Ciclista: ', count(filter(resultado$final , mes == string_mes & identidad == 'CICLISTA'))$n, '\n',
