@@ -1,0 +1,22 @@
+.logo {
+background-color: #06433B !important;
+font-size: 12pt !important;
+}
+
+.navbar {
+background-color: #175D53 !important;
+}
+
+.sidebar-menu>li.active>a , .sidebar-menu>li:hover>a {
+border-left-color: #175D53 !important;
+}
+
+.sidebar-toggle:hover {
+background-color: #06433B !important;
+}
+
+#tabla_muestra {
+  margin: auto !important;
+  display: block !important;
+  width: 90% !important;
+}

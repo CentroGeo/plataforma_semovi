@@ -40,7 +40,5 @@ vignettes/*.pdf
 # R package: bookdown caching files
 /*_files/
 
-Axa.csv
-C5.csv
-repubikla.csv
-vinculacion_final.csv
+vinculador/data
+visualizador/data
