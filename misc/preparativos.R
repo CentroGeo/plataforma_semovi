@@ -1,4 +1,4 @@
-setwd('/home/datalab/Proyectos/shiny/accidentes_viales/07_definitiva')
+setwd('/home/datalab/git/plataforma_semovi/vinculador')
 
 # ===== PGJ =====
 pgj <- read.csv('data/PGJ.csv' , sep = ';' , encoding = 'UTF-8' , stringsAsFactors = FALSE)
