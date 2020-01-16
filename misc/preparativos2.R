@@ -29,7 +29,7 @@ tiempo_final <- 1.5 / 24 # días
 filtro_fecha <- list('2018-01-01' , '2018-12-31')
 filtro_bd <- c('PGJ' , 'SSC' , 'C5')
 
-unificada <- data.frame(id_original = as.character() , base_original = as.character(), timestamp = chron() , geometry = st_sfc(crs = 32614))
+unificada <- data.frame(id_original = as.character() , base_original = as.character(), timestamp = chron() , geometry = st_sfc(crs = 32614) , stringsAsFactors = FALSE)
 
 pgj_tmp = pgj
 pgj_tmp <- filter(pgj_tmp , delito == 'HOMICIDIO CULPOSO POR TRÁNSITO VEHICULAR (COLISION)' | delito == 'HOMICIDIO CULPOSO POR TRÁNSITO VEHICULAR (ATROPELLADO)' | delito == 'HOMICIDIO CULPOSO POR TRÁNSITO VEHICULAR (CAIDA)' | delito == 'HOMICIDIO CULPOSO POR TRÁNSITO VEHICULAR')
