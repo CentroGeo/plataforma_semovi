@@ -203,19 +203,21 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                      box(width = 12,
                                                                          tags$p(strong('Vínculos Logrados') , style = 'color: #848888; font-size: 16pt;'),
                                                                          tags$p(strong('Vínculos Totales PGJ-SSC-C5')),
-                                                                         dataTableOutput(outputId = 'vinculos_logrados_a'),
+                                                                         tags$div(style = 'font-size: 80%;',
+                                                                                  dataTableOutput(outputId = 'vinculos_logrados_a')),
                                                                          tags$div(style = 'background-color: white; height: 25px;'),
-                                                                         fluidRow(column(6,
-                                                                                         tags$p(strong('Vinculos Parciales PGJ-SSC')),
-                                                                                         dataTableOutput(outputId = 'vinculos_logrados_b')),
-                                                                                  column(6,
-                                                                                         tags$p(strong('Vinculos Parciales PGJ-C5')),
-                                                                                         dataTableOutput(outputId = 'vinculos_logrados_c'))),
+                                                                         tags$p(strong('Vinculos Parciales PGJ-SSC')),
+                                                                         tags$div(style = 'font-size: 80%;',
+                                                                                  dataTableOutput(outputId = 'vinculos_logrados_b')),
+                                                                         tags$div(style = 'background-color: white; height: 25px;'),
+                                                                         tags$p(strong('Vinculos Parciales PGJ-C5')),
+                                                                         tags$div(style = 'font-size: 80%;',
+                                                                                  dataTableOutput(outputId = 'vinculos_logrados_c')),
                                                                          tags$div(style = 'background-color: white; height: 25px;'),
                                                                          tags$p(strong('Parámetros para Algoritmo')),
                                                                          tableOutput(outputId = 'tabla_parametros'),
-                                                                         tags$p(strong('Distancia Promedio') , ' - ' , textOutput(outputId = 'texto_distancia' , inline = TRUE)),
-                                                                         tags$p(strong('Tiempo Promedio') , ' - ' , textOutput(outputId = 'texto_tiempo' , inline = TRUE))
+                                                                         tags$div(style = 'background-color: white; height: 10px;'),
+                                                                         actionButton(inputId = 'boton_algoritmo' , label = strong('Iniciar Algoritmo') , icon = icon('sync'))
                                                                          ))))),
                                     # ===== TAB RESULTADOS =====
                                     tabItem(tabName = 'resultados',
@@ -275,7 +277,7 @@ server <- function(input, output, session) {
   algoritmo_distancia <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   algoritmo_tiempo <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
-  tmp <- reactiveValues(a = NULL)
+  key_tab3 <- reactiveValues(k = NULL)
   
   # ===== MAPA INICIAL =====
   output$mapa <- renderLeaflet({
@@ -1053,10 +1055,12 @@ server <- function(input, output, session) {
           if (eventos_mapa$aux1_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_PGJ'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1064,10 +1068,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux1_t == 'SSC') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_SSC'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1075,10 +1081,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux1_t == 'C5') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_C5'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1088,10 +1096,12 @@ server <- function(input, output, session) {
           if (eventos_mapa$aux2_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_PGJ'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
@@ -1099,10 +1109,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux2_t == 'SSC') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_SSC'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
@@ -1110,10 +1122,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux2_t == 'C5') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_C5'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
@@ -1142,21 +1156,21 @@ server <- function(input, output, session) {
             }
             else if (eventos_mapa$aux2_t == 'C5') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
           }
           else if (eventos_mapa$aux1_t == 'C5') {
             bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(seleccionados$a$id_original)
             if (eventos_mapa$aux2_t == 'PGJ') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
             else if (eventos_mapa$aux2_t == 'SSC') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
           }
         }
@@ -1184,14 +1198,17 @@ server <- function(input, output, session) {
                           strong('¡Importante!'), 'Por favor seleccione algún elemento del mapa para realizar la vinculación.'))
       }
       else {
+        # print(eventos_mapa$principal)
         if (!is.null(eventos_mapa$aux1)) {
           if (eventos_mapa$aux1_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_PGJ'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1199,10 +1216,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux1_t == 'SSC') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_SSC'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1210,10 +1229,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux1_t == 'C5') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_C5'] <- as.character(seleccionados$a$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
             else if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$a$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$a$timestamp)))
             }
@@ -1223,10 +1244,12 @@ server <- function(input, output, session) {
           if (eventos_mapa$aux2_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_PGJ'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
@@ -1234,10 +1257,12 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux2_t == 'SSC') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_SSC'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_ssc , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_ssc , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'C5') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
@@ -1245,19 +1270,20 @@ server <- function(input, output, session) {
           else if (eventos_mapa$aux2_t == 'C5') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_C5'] <- as.character(seleccionados$b$id_original)
             if (bd$reference == 'PGJ') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_PGJ'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
             else if (bd$reference == 'SSC') {
+              bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_SSC'] <- as.character(eventos_mapa$principal$id_original)
               algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(eventos_mapa$principal$geometry , seleccionados$b$geometry)[1,1]))
               algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(eventos_mapa$principal$timestamp - seleccionados$b$timestamp)))
             }
           }
         }
         if (!is.null(eventos_mapa$aux1) & !is.null(eventos_mapa$aux2)) {
-          print(seleccionados$a)
-          print(seleccionados$b)
-          browser()
+          # print(seleccionados$a)
+          # print(seleccionados$b)
           if (eventos_mapa$aux1_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_PGJ'] <- as.character(seleccionados$a$id_original)
             if (eventos_mapa$aux2_t == 'SSC') {
@@ -1280,27 +1306,28 @@ server <- function(input, output, session) {
             }
             else if (eventos_mapa$aux2_t == 'C5') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_C5'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
           }
           else if (eventos_mapa$aux1_t == 'C5') {
             bd$unificada[bd$unificada$id_global == seleccionados$b$id_global, 'id_C5'] <- as.character(seleccionados$a$id_original)
             if (eventos_mapa$aux2_t == 'PGJ') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_PGJ'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_ssc <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_ssc <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$pgj_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$pgj_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
             else if (eventos_mapa$aux2_t == 'SSC') {
               bd$unificada[bd$unificada$id_global == seleccionados$a$id_global, 'id_SSC'] <- as.character(seleccionados$b$id_original)
-              algoritmo_distancia$pgj_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
-              algoritmo_tiempo$pgj_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
+              algoritmo_distancia$ssc_c5 <- append(algoritmo_distancia$ssc_c5 , as.numeric(st_distance(seleccionados$a$geometry , seleccionados$b$geometry)[1,1]))
+              algoritmo_tiempo$ssc_c5 <- append(algoritmo_tiempo$ssc_c5 , as.numeric(abs(seleccionados$a$timestamp - seleccionados$b$timestamp)))
             }
           }
         }
         # ===
-        # print(algoritmo_tiempo$pgj_ssc)
-        # print(algoritmo_tiempo$pgj_c5)
+        # print(bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global,])
+        # print(bd$unificada[bd$unificada$id_global == seleccionados$b$id_global,])
+        # print(bd$unificada[bd$unificada$id_global == seleccionados$a$id_global,])
         count_muestra$i <- count_muestra$i + 1
         eventos_mapa$principal <- bd$muestra[count_muestra$i,]
         lat = st_coordinates(st_transform(eventos_mapa$principal$geometry , 4326))[2]
@@ -1363,36 +1390,106 @@ server <- function(input, output, session) {
   output$vinculos_logrados_a <- renderDataTable({
     if ('C5' %in% input$filtro_bd) {
        tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))
-       tmp$timestamp <- format(tmp$timestamp , format = '%d/%m/%Y, %T')
-       tmp <- tmp %>% select('timestamp' , 'id_PGJ' , 'id_SSC' , 'id_C5') %>% rename('Fecha y Hora de Hechos'='timestamp')
-       datatable(tmp , options = list(searching = FALSE , pageLength = 5, lengthMenu = list(c(5), c('5'))))
+       tmp$geometry <- NULL
+       tmp <- distinct(tmp %>% select(id_PGJ , id_SSC , id_C5))
+       tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+       tmp$geometry <- NULL
+       tmp <- tmp %>% rename('id_PGJ'='id')
+       tmp <- merge(ssc , tmp , by.x = 'id' , by.y = 'id_SSC')
+       tmp$geometry <- NULL
+       tmp <- tmp %>% rename('id_SSC'='id')
+       tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
+       tmp$geometry <- NULL
+       tmp <- tmp %>% rename('id_C5'='folio')
+       # =
+       tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+       tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+       tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+       tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+       tmp$tipo_evento <- str_to_title(tmp$tipo_evento , locale = 'es')
+       tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , id_C5 , tipo_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+         rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_evento')
+       # =
+       datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
     }
   })
   
   output$vinculos_logrados_b <- renderDataTable({
     tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & is.na(id_C5))
-    tmp$timestamp <- format(tmp$timestamp , format = '%d/%m/%Y, %T')
-    tmp <- tmp %>% select('timestamp' , 'id_PGJ' , 'id_SSC') %>% rename('Fecha y Hora de Hechos'='timestamp')
-    datatable(tmp , options = list(searching = FALSE , pageLength = 5, lengthMenu = list(c(5), c('5'))))
+    tmp$geometry <- NULL
+    tmp <- distinct(tmp %>% select(id_PGJ , id_SSC))
+    tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp <- merge(ssc , tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_SSC'='id')
+    # =
+    tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+    tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+    tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+    tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+    tmp$tipo_evento <- str_to_title(tmp$tipo_evento , locale = 'es')
+    tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , tipo_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+      rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_evento')
+    # =
+    datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
   })
   
   output$vinculos_logrados_c <- renderDataTable({
     tmp <- filter(bd$unificada , !is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))
-    tmp$timestamp <- format(tmp$timestamp , format = '%d/%m/%Y, %T')
-    tmp <- tmp %>% select('timestamp' , 'id_PGJ' , 'id_C5') %>% rename('Fecha y Hora de Hechos'='timestamp')
-    datatable(tmp , options = list(searching = FALSE , pageLength = 5, lengthMenu = list(c(5), c('5'))))
+    tmp$geometry <- NULL
+    tmp <- distinct(tmp %>% select(id_PGJ , id_C5))
+    tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_C5'='folio')
+    # =
+    tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+    tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+    tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+    tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+    tmp$incidente_c4 <- str_to_title(tmp$incidente_c4 , locale = 'es')
+    tmp <- tmp %>% select(timestamp.y , id_PGJ , id_C5 , incidente_c4 , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+      rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='incidente_c4')
+    # =
+    datatable(tmp , rownames = FALSE , options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
   })
   
   output$tabla_parametros <- renderTable(bordered = TRUE , width = '100%' , align = 'c' , digits = 2 , rownames = TRUE , {
     tmp <- data.frame(A = as.numeric() , B = as.numeric() , C = as.numeric())
-    tmp[nrow(tmp) + 1,] <- c(mean(algoritmo_distancia$pgj_ssc) , mean(algoritmo_distancia$pgj_c5) , mean(algoritmo_distancia$ssc_c5))
-    tmp[nrow(tmp) + 1,] <- c(mean(algoritmo_tiempo$pgj_ssc) , mean(algoritmo_tiempo$pgj_c5) , mean(algoritmo_tiempo$ssc_c5))
+    tmp[nrow(tmp) + 1,] <- c(ifelse(is.null(algoritmo_distancia$pgj_ssc) , NA , paste0(round(mean(algoritmo_distancia$pgj_ssc) , 2) , 'm (± ', round(2*sd(algoritmo_distancia$pgj_ssc) , 2) ,'m)')) ,
+                             ifelse(is.null(algoritmo_distancia$pgj_c5) , NA , paste0(round(mean(algoritmo_distancia$pgj_c5) , 2) , 'm (± ', round(2*sd(algoritmo_distancia$pgj_c5) , 2) ,'m)')),
+                             ifelse(is.null(algoritmo_distancia$ssc_c5) , NA , paste0(round(mean(algoritmo_distancia$ssc_c5) , 2) , 'm (± ', round(2*sd(algoritmo_distancia$ssc_c5) , 2) ,'m)')))
+    tmp[nrow(tmp) + 1,] <- c(ifelse(is.null(algoritmo_tiempo$pgj_ssc) , NA , paste0(round(mean(algoritmo_tiempo$pgj_ssc)*24*60 , 2) , 'min (± ', round(2*sd(algoritmo_tiempo$pgj_ssc)*24*60 , 2) ,'min)')) ,
+                             ifelse(is.null(algoritmo_tiempo$pgj_c5) , NA , paste0(round(mean(algoritmo_tiempo$pgj_c5)*24*60 , 2) , 'min (± ', round(2*sd(algoritmo_tiempo$pgj_c5)*24*60 , 2) ,'min)')),
+                             ifelse(is.null(algoritmo_tiempo$ssc_c5) , NA , paste0(round(mean(algoritmo_tiempo$ssc_c5)*24*60 , 2) , 'min (± ', round(2*sd(algoritmo_tiempo$ssc_c5)*24*60 , 2) ,'min)')))
     row.names(tmp) <- c('Distancia' , 'Tiempo')
     tmp %>% rename('PGJ / SSC'='A' , 'PGJ / C5'='B' , 'SSC / C5'='C')
   })
   
-  output$texto_distancia <- renderText(if (!is.null(algoritmo_distancia$pgj_ssc)) mean(algoritmo_distancia$pgj_ssc))
-  output$texto_tiempo <- renderText(if (!is.null(algoritmo_tiempo$pgj_ssc)) mean(algoritmo_tiempo$pgj_ssc))
+  observeEvent(input$boton_algoritmo , {
+    showModal(modalDialog(title = NULL , footer = NULL ,
+                          tags$p(style = 'font-size: 20px;', class = 'finalizar_defecto',
+                                 strong('Ejecutando Algoritmo de Vinculación')),
+                          tags$p('Espere mientras se vinculan todos los Incidentes Viales', class = 'finalizar_defecto'),
+                          tags$div(id = 'div_load_pgj', class = 'finalizar_defecto', style = 'display: block; margin: auto; width: 50%;',
+                                   tags$img(src = 'loading.gif' , style = 'max-width:100%; max-height:100%; vertical-align: middle;'))))
+    # =
+    distancia_final <- list(mean(algoritmo_distancia$pgj_ssc) + 2*sd(algoritmo_distancia$pgj_ssc),
+                            mean(algoritmo_distancia$pgj_c5) + 2*sd(algoritmo_distancia$pgj_c5),
+                            mean(algoritmo_distancia$ssc_c5) + 2*sd(algoritmo_distancia$ssc_c5))
+    tiempo_final <- list(mean(algoritmo_tiempo$pgj_ssc) + 2*sd(algoritmo_tiempo$pgj_ssc),
+                         mean(algoritmo_tiempo$pgj_c5) + 2*sd(algoritmo_tiempo$pgj_c5),
+                         mean(algoritmo_tiempo$ssc_c5) + 2*sd(algoritmo_tiempo$ssc_c5))
+    # =
+    Sys.sleep(5)
+    removeModal()
+    key_tab3$k <- 1
+    updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
+  })
   
   # ===== PARÁMETROS POR DEFECTO =====
   observeEvent(input$boton_defecto , {
@@ -1403,8 +1500,8 @@ server <- function(input, output, session) {
                           tags$div(id = 'div_load_pgj', class = 'finalizar_defecto', style = 'display: block; margin: auto; width: 50%;',
                                    tags$img(src = 'loading.gif' , style = 'max-width:100%; max-height:100%; vertical-align: middle;'))))
     # =
-    distancia_final <- 600 # metros
-    tiempo_final <- 2.5 / 24 # días
+    distancia_final <- 2000 # metros
+    tiempo_final <- 1.5 / 24 # días
     # =
     algoritmo_sp <- function(fila , bd) {
       print('Yoshi')
@@ -1448,13 +1545,13 @@ server <- function(input, output, session) {
     # bd$unificada[bd$unificada$id_global %in% a , 'id_C5'] <- NA
     # =
     Sys.sleep(5)
-    tmp$a <- 1
     removeModal()
+    key_tab3$k <- 1
     updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
   })
   
   output$menu_3 <- renderMenu({
-    if (is.null(tmp$a)) NULL
+    if (is.null(key_tab3$k)) NULL
     else menuItem(text = 'Resultados', icon = icon('chart-bar') , tabName = 'resultados')
   })
   
