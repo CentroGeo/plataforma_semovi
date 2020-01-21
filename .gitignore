@@ -41,4 +41,5 @@ vignettes/*.pdf
 /*_files/
 
 vinculador/data
+vinculador/tmp
 visualizador/data

@@ -1,9 +1,30 @@
 algoritmo_sp <- function(fila , bd) {
   bd_id <- paste0('id_' , bd)
-  # =
+  # =====
   if(!is.na(fila[bd_id][[1]])) {
     return(as.character(fila[bd_id]))}
-  # =
+  # =====
+  # if (fila['base_original'][[1]] != bd) {
+  #   if (fila['base_original'][[1]] == 'PGJ') {
+  #     if (fila['id_original'][[1]] %in% filter(unificada , base_original == bd)$id_PGJ) {
+  #       z <- filter(unificada , base_original == bd & id_PGJ == fila['id_original'][[1]])[1,]
+  #       return(as.character(z[bd_id]))
+  #     }
+  #   }
+  #   else if (fila['base_original'][[1]] == 'SSC') {
+  #     if (fila['id_original'][[1]] %in% filter(unificada , base_original == bd)$id_SSC) {
+  #       z <- filter(unificada , base_original == bd & id_SSC == fila['id_original'][[1]])[1,]
+  #       return(as.character(z[bd_id]))
+  #     }
+  #   }
+  #   else if (fila['base_original'][[1]] == 'C5') {
+  #     if (fila['id_original'][[1]] %in% filter(unificada , base_original == bd)$id_C5) {
+  #       z <- filter(unificada , base_original == bd & id_C5 == fila['id_original'][[1]])[1,]
+  #       return(as.character(z[bd_id]))
+  #     }
+  #   }
+  # }
+  # =====
   shp <- filter(unificada , id_global == as.integer(fila['id_global']))
   tmp_within <- st_is_within_distance(shp$geometry , unificada$geometry , distancia_final)
   posibles <- unificada[tmp_within[[1]],]
@@ -85,16 +106,9 @@ unificada[unificada$base_original == 'C5' , 'id_C5'] <- as.character(unificada[u
 for (bd in filtro_bd) {
   id <- paste0('id_',bd)
   unificada[id] <- as.character(apply(unificada , MARGIN = 1 , FUN = algoritmo_sp , bd = bd))
+  a <- unificada[unificada[id] == 'character(0)' ,]$id_global
+  unificada[unificada$id_global %in% a , id] <- NA
 }
-
-a <- filter(unificada , id_PGJ == 'character(0)')$id_global
-unificada[unificada$id_global %in% a , 'id_PGJ'] <- NA
-# =
-a <- filter(unificada , id_SSC == 'character(0)')$id_global
-unificada[unificada$id_global %in% a , 'id_SSC'] <- NA
-# =
-a <- filter(unificada , id_C5 == 'character(0)')$id_global
-unificada[unificada$id_global %in% a , 'id_C5'] <- NA
 
 rm(tmp , pgj_tmp , ssc_tmp , c5_tmp , a , bd , id)
 

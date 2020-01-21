@@ -278,6 +278,9 @@ server <- function(input, output, session) {
   algoritmo_tiempo <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
   key_tab3 <- reactiveValues(k = NULL)
+  m_confusion <- reactiveValues(list = c() , original = NULL , resultado = NULL , max = NULL)
+  algoritmo_distancia_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
+  algoritmo_tiempo_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
   # ===== MAPA INICIAL =====
   output$mapa <- renderLeaflet({
@@ -794,6 +797,8 @@ server <- function(input, output, session) {
     bd$muestra <- tmp[sample(nrow(tmp) , tmp2) ,]
     # print(bd$muestra)
     # =
+    m_confusion$max <- floor(nrow(bd$muestra)*0.7)
+    # =
     count_muestra$i <- 1
     count_muestra$max <- nrow(bd$unificada)
     eventos_mapa$principal <- bd$muestra[count_muestra$i,]
@@ -1174,6 +1179,7 @@ server <- function(input, output, session) {
             }
           }
         }
+        m_confusion$list <- append(m_confusion$list , eventos_mapa$principal$id_global)
         eventos_mapa$aux1 <- NULL
         eventos_mapa$aux2 <- NULL
         # =
@@ -1324,6 +1330,15 @@ server <- function(input, output, session) {
             }
           }
         }
+        if (count_muestra$i > m_confusion$max) m_confusion$list <- append(m_confusion$list , eventos_mapa$principal$id_global)
+        if (count_muestra$i <= m_confusion$max) {
+          algoritmo_distancia_mc$pgj_ssc <- algoritmo_distancia$pgj_ssc
+          algoritmo_distancia_mc$pgj_c5 <- algoritmo_distancia$pgj_c5
+          algoritmo_distancia_mc$ssc_c5 <- algoritmo_distancia$ssc_c5
+          algoritmo_tiempo_mc$pgj_ssc <- algoritmo_tiempo$pgj_ssc
+          algoritmo_tiempo_mc$pgj_c5 <- algoritmo_tiempo$pgj_c5
+          algoritmo_tiempo_mc$ssc_c5 <- algoritmo_tiempo$ssc_c5
+        }
         # ===
         # print(bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global,])
         # print(bd$unificada[bd$unificada$id_global == seleccionados$b$id_global,])
@@ -1353,6 +1368,8 @@ server <- function(input, output, session) {
   observeEvent(input$boton_novincular , {
     removeUI(selector = '#div_errorvinc_b')
     if (count_muestra$i >= (nrow(bd$muestra))) {
+      m_confusion$list <- append(m_confusion$list , eventos_mapa$principal$id_global)
+      # print(m_confusion$list)
       hideElement(id = 'div_tab2_a' , anim = TRUE , animType = 'fade')
       hideElement(id = 'div_tab2_b' , anim = TRUE , animType = 'fade')
       showElement(id = 'div_tab2_c' , anim = TRUE , animType = 'fade')
@@ -1365,6 +1382,7 @@ server <- function(input, output, session) {
         addPolygons(fillColor = '#57948B' , fillOpacity = 0.25 , color = '#002A24' , opacity = 0.75 , data = cdmx_sa)
     }
     else {
+      if (count_muestra$i > m_confusion$max) m_confusion$list <- append(m_confusion$list , eventos_mapa$principal$id_global)
       eventos_mapa$aux1 <- NULL
       eventos_mapa$aux2 <- NULL
       # =
@@ -1477,15 +1495,92 @@ server <- function(input, output, session) {
                           tags$p('Espere mientras se vinculan todos los Incidentes Viales', class = 'finalizar_defecto'),
                           tags$div(id = 'div_load_pgj', class = 'finalizar_defecto', style = 'display: block; margin: auto; width: 50%;',
                                    tags$img(src = 'loading.gif' , style = 'max-width:100%; max-height:100%; vertical-align: middle;'))))
-    # =
-    distancia_final <- list(mean(algoritmo_distancia$pgj_ssc) + 2*sd(algoritmo_distancia$pgj_ssc),
+    print(m_confusion$list)
+    print(algoritmo_distancia$pgj_ssc)
+    print(algoritmo_distancia_mc$pgj_ssc)
+    # =====
+    m_confusion$original <- filter(bd$unificada , id_global %in% m_confusion$list)
+    # =====
+    distancia_list <- list(mean(algoritmo_distancia$pgj_ssc) + 2*sd(algoritmo_distancia$pgj_ssc),
                             mean(algoritmo_distancia$pgj_c5) + 2*sd(algoritmo_distancia$pgj_c5),
                             mean(algoritmo_distancia$ssc_c5) + 2*sd(algoritmo_distancia$ssc_c5))
-    tiempo_final <- list(mean(algoritmo_tiempo$pgj_ssc) + 2*sd(algoritmo_tiempo$pgj_ssc),
+    tiempo_list <- list(mean(algoritmo_tiempo$pgj_ssc) + 2*sd(algoritmo_tiempo$pgj_ssc),
                          mean(algoritmo_tiempo$pgj_c5) + 2*sd(algoritmo_tiempo$pgj_c5),
                          mean(algoritmo_tiempo$ssc_c5) + 2*sd(algoritmo_tiempo$ssc_c5))
+    # =====
+    algoritmo_sp <- function(fila , bd_sp) {
+      bd_id <- paste0('id_' , bd_sp)
+      # =====
+      if(!is.na(fila[bd_id][[1]])) {
+        return(as.character(fila[bd_id]))}
+      # =====
+      if ((bd_sp == 'PGJ' & fila['id_original'][[1]] == 'SSC') | (bd_sp == 'SSC' & fila['id_original'][[1]] == 'PGJ')) {
+        distancia_final <- distancia_list[1]
+        tiempo_final <- tiempo_list[1]}
+      else if ((bd_sp == 'PGJ' & fila['id_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['id_original'][[1]] == 'PGJ')) {
+        distancia_final <- distancia_list[2]
+        tiempo_final <- tiempo_list[2]}
+      else if ((bd_sp == 'SSC' & fila['id_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['id_original'][[1]] == 'SSC')) {
+        distancia_final <- distancia_list[3]
+        tiempo_final <- tiempo_list[3]}
+      # =====
+      shp <- filter(bd$unificada , id_global == as.integer(fila['id_global']))
+      tmp_within <- st_is_within_distance(shp$geometry , bd$unificada$geometry , distancia_final)
+      posibles <- bd$unificada[tmp_within[[1]],]
+      # =
+      posibles <- filter(posibles , base_original == bd_sp)
+      # =
+      min_tiempo <- shp$timestamp - tiempo_final
+      max_tiempo <- shp$timestamp + tiempo_final
+      posibles <- filter(posibles , timestamp >= min_tiempo & timestamp <= max_tiempo)
+      # =
+      if (nrow(posibles) > 1) {
+        posibles <- posibles[which.min(posibles$timestamp - shp$timestamp) , ]
+        return(as.character(posibles$id_original))}
+      else if (is.null(nrow(posibles))) {
+        return(NA)}
+      else {
+        return(as.character(posibles$id_original))}
+    }
+    # ======
+    for (bd_sp in input$filtro_bd) {
+      id <- paste0('id_',bd_sp)
+      bd$unificada[id] <- as.character(apply(bd$unificada , MARGIN = 1 , FUN = algoritmo_sp , bd_sp = bd_sp))
+      a <- bd$unificada[bd$unificada[id] == 'character(0)' ,]$id_global
+      bd$unificada[bd$unificada$id_global %in% a , id] <- NA
+    }
+    # ======
+    m_confusion$resultado <- m_confusion$original
+    m_confusion$resultado$id_PGJ <- NA
+    m_confusion$resultado[m_confusion$resultado$base_original == 'PGJ' , 'id_PGJ'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'PGJ' , 'id_original'])
+    m_confusion$resultado$id_SSC <- NA
+    m_confusion$resultado[m_confusion$resultado$base_original == 'SSC' , 'id_SSC'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'SSC' , 'id_original'])
+    m_confusion$resultado$id_C5 <- NA
+    m_confusion$resultado[m_confusion$resultado$base_original == 'C5' , 'id_C5'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'C5' , 'id_original'])
+    # =====
+    distancia_list <- list(mean(algoritmo_distancia_mc$pgj_ssc) + 2*sd(algoritmo_distancia_mc$pgj_ssc),
+                           mean(algoritmo_distancia_mc$pgj_c5) + 2*sd(algoritmo_distancia_mc$pgj_c5),
+                           mean(algoritmo_distancia_mc$ssc_c5) + 2*sd(algoritmo_distancia_mc$ssc_c5))
+    tiempo_list <- list(mean(algoritmo_tiempo_mc$pgj_ssc) + 2*sd(algoritmo_tiempo_mc$pgj_ssc),
+                        mean(algoritmo_tiempo_mc$pgj_c5) + 2*sd(algoritmo_tiempo_mc$pgj_c5),
+                        mean(algoritmo_tiempo_mc$ssc_c5) + 2*sd(algoritmo_tiempo_mc$ssc_c5))
+    # =====
+    for (bd_sp in input$filtro_bd) {
+      id <- paste0('id_',bd_sp)
+      m_confusion$resultado[id] <- as.character(apply(m_confusion$resultado , MARGIN = 1 , FUN = algoritmo_sp , bd_sp = bd_sp))
+      a <- m_confusion$resultado[m_confusion$resultado[id] == 'character(0)' ,]$id_global
+      m_confusion$resultado[m_confusion$resultado$id_global %in% a , id] <- NA
+    }
+    # =====
+    m_confusion$original$timestamp <- format(m_confusion$original$timestamp , format = '%d/%m/%Y , %T')
+    m_confusion$resultado$timestamp <- format(m_confusion$resultado$timestamp , format = '%d/%m/%Y , %T')
+    m_confusion$original$geometry <- NULL
+    m_confusion$resultado$geometry <- NULL
+    # =====
+    write.csv(m_confusion$original , file = 'tmp/original.csv' , row.names = FALSE)
+    write.csv(m_confusion$resultado , file = 'tmp/resultado.csv' , row.names = FALSE)
     # =
-    Sys.sleep(5)
+    # Sys.sleep(5)
     removeModal()
     key_tab3$k <- 1
     updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
@@ -1503,18 +1598,17 @@ server <- function(input, output, session) {
     distancia_final <- 2000 # metros
     tiempo_final <- 1.5 / 24 # días
     # =
-    algoritmo_sp <- function(fila , bd) {
-      print('Yoshi')
-      bd_id <- paste0('id_' , bd)
-      # =
+    algoritmo_sp <- function(fila , bd_sp) {
+      bd_id <- paste0('id_' , bd_sp)
+      # =====
       if(!is.na(fila[bd_id][[1]])) {
         return(as.character(fila[bd_id]))}
-      # =
+      # =====
       shp <- filter(bd$unificada , id_global == as.integer(fila['id_global']))
       tmp_within <- st_is_within_distance(shp$geometry , bd$unificada$geometry , distancia_final)
       posibles <- bd$unificada[tmp_within[[1]],]
       # =
-      posibles <- filter(posibles , base_original == bd)
+      posibles <- filter(posibles , base_original == bd_sp)
       # =
       min_tiempo <- shp$timestamp - tiempo_final
       max_tiempo <- shp$timestamp + tiempo_final
@@ -1529,26 +1623,21 @@ server <- function(input, output, session) {
         return(as.character(posibles$id_original))}
     }
     # =
-    # for (bd in input$filtro_bd) {
-    #   id <- paste0('id_',bd)
-    #   bd$unificada$tmp <- as.character(apply(bd$unificada , MARGIN = 1 , FUN = algoritmo_sp , bd = bd))
-    #   bd$unificada[id] <- bd$unificada$tmp
-    # }
-    # # =
-    # a <- filter(bd$unificada , id_PGJ == 'character(0)')$id_global
-    # bd$unificada[bd$unificada$id_global %in% a , 'id_PGJ'] <- NA
-    # # =
-    # a <- filter(bd$unificada , id_SSC == 'character(0)')$id_global
-    # bd$unificada[bd$unificada$id_global %in% a , 'id_SSC'] <- NA
-    # # =
-    # a <- filter(bd$unificada , id_C5 == 'character(0)')$id_global
-    # bd$unificada[bd$unificada$id_global %in% a , 'id_C5'] <- NA
+    for (bd_sp in input$filtro_bd) {
+      id <- paste0('id_',bd_sp)
+      bd$unificada[id] <- as.character(apply(bd$unificada , MARGIN = 1 , FUN = algoritmo_sp , bd_sp = bd_sp))
+      a <- bd$unificada[bd$unificada[id] == 'character(0)' ,]$id_global
+      bd$unificada[bd$unificada$id_global %in% a , id] <- NA
+    }
     # =
-    Sys.sleep(5)
+    # Sys.sleep(5)
     removeModal()
     key_tab3$k <- 1
     updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
   })
+  
+  # ===== MATRIZ DE CONFUSIÓN =====
+  
   
   output$menu_3 <- renderMenu({
     if (is.null(key_tab3$k)) NULL
