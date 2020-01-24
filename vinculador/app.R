@@ -16,10 +16,17 @@ library(shinyjs)
 library(leaflet.extras)
 library(htmltools)
 library(DT)
+library(ggforce)
 
 # ===== OPERACIONES INICIALES =====
 cdmx <- read_sf(dsn = "data/cdmx.shp", layer = "cdmx")
 cdmx_sa <- read_sf(dsn = "data/cdmx_sa.shp", layer = "cdmx_sa")
+
+compareNA <- function(v1,v2) {
+  same <- (v1 == v2) | (is.na(v1) & is.na(v2))
+  same[is.na(same)] <- FALSE
+  return(same)
+}
 
 # ===== FRONT-END =====
 ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
@@ -229,36 +236,38 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                                      min = as.Date('2018-01-01',"%Y-%m-%d"),
                                                                                      max = as.Date('2018-12-31',"%Y-%m-%d"),
                                                                                      value = c(as.Date('2018-01-01',"%Y-%m-%d") , as.Date('2018-12-31',"%Y-%m-%d")))))),
-                                                     column(6 , box(width = 12 ,
-                                                                    tags$p('Resultados Finales',
-                                                                           style = 'font-size: 16pt;'),
-                                                                    selectInput(inputId = 'resultados_lugar' , label = 'Área de Análisis',
-                                                                                choices = c('Total Ciudad de México' , 'Álvaro Obregón' , 'Azcapotzalco' , 'Benito Juárez' , 'Coyoacán',
-                                                                                            'Cuajimalpa de Morelos' , 'Cuauhtémoc' , 'Gustavo A. Madero' ,
-                                                                                            'Iztacalco' , 'Iztapalapa' , 'La Magdalena Contreras' , 'Miguel Hidalgo',
-                                                                                            'Milpa Alta' , 'Tlalpan' , 'Tláhuac' , 'Venustiano Carranza', 'Xochimilco')),
-                                                                    fluidRow(column(6,
-                                                                                    checkboxGroupInput(inputId = 'resultados_bd' , label = 'Vínculos a Visualizar' , inline = TRUE,
-                                                                                                       choices = c('Totales' , 'Parciales' , 'Nulos'))),
-                                                                             column(6)),
-                                                                    tags$p(strong('Descarga de Datos')),
-                                                                    fluidRow(column(4,
-                                                                                    actionButton(inputId = 'descarga_a' , label = strong('Vínculos Totales') , icon = icon('download'))),
-                                                                             column(4,
-                                                                                    actionButton(inputId = 'descarga_b' , label = strong('Vínculos Parciales') , icon = icon('download'))),
-                                                                             column(4,
-                                                                                    actionButton(inputId = 'descarga_c' , label = strong('Vínculos Nulos') , icon = icon('download')))),
-                                                                    actionButton(inputId = 'descarga_d' , label = strong('Todos los Incidentes Viales') , icon = icon('download'))),
-                                                            box(width = 12,
-                                                                selectInput(inputId = 'tipo_grafica', label = 'Datos a Graficar', choices = c('Total de Incidentes' , 'Categorización por Tipo de Vehículo')),
-                                                                withSpinner(plotOutput(outputId = 'grafica_sp', height = '380px',
-                                                                                       click = clickOpts(id = 'plot_click')),
-                                                                            type = 3 , color = '#002A24' , size = 1 , color.background = '#FFFFFF'),
-                                                                uiOutput(outputId = 'click_info'),
-                                                                tags$div(id = 'div_grafica_a'),
-                                                                tags$div(tableOutput(outputId = 'tabla_totales'),
-                                                                         style = 'font-size: 80%; width: 100%; margin: auto;')
-                                                            ))))
+                                                     column(6 , box(width = 12,
+                                                                    tabsetPanel(tabPanel(title = 'Precisión del Algoritmo',
+                                                                                         tags$p(strong('Vínculos PGJ / SSC')),
+                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_pgj.ssc')),
+                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_pgj.ssc')),
+                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_pgj.ssc')),
+                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_pgj.ssc')),
+                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_pgj.ssc')),
+                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_pgj.ssc')),
+                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_pgj.ssc')),
+                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_pgj.ssc')))),
+                                                                                         tags$p(strong('Vínculos PGJ / C5')),
+                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_pgj.c5')),
+                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_pgj.c5')),
+                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_pgj.c5')),
+                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_pgj.c5')),
+                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_pgj.c5')),
+                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_pgj.c5')),
+                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_pgj.c5')),
+                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_pgj.c5')))),
+                                                                                         tags$p(strong('Vínculos SSC / C5')),
+                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_ssc.c5')),
+                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_ssc.c5')),
+                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_ssc.c5')),
+                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_ssc.c5')),
+                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_ssc.c5')),
+                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_ssc.c5')),
+                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_ssc.c5')),
+                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_ssc.c5'))))
+                                                                                         ),
+                                                                                tabPanel(title = 'Visualización en Mapa')))
+                                                            )))
                                   )))
 
 server <- function(input, output, session) {
@@ -269,7 +278,7 @@ server <- function(input, output, session) {
   special_bd <- reactiveValues(active_pgj = pgj , active_c5 = c5)
   key_remote <- reactiveValues(k_pgj = FALSE , k_c5 = FALSE , k_rndm = FALSE)
   
-  bd <- reactiveValues(unificada = NULL , reference = NULL , muestra = NULL , posibles = NULL)
+  bd <- reactiveValues(unificada = NULL , reference = NULL , muestra = NULL , posibles = NULL , incidentes_viales = NULL)
   count_muestra <- reactiveValues(i = 1 , max = NULL)
   eventos_mapa <- reactiveValues(principal = NULL , aux1 = NULL , aux1_t = NULL , aux2 = NULL , aux2_t = NULL)
   seleccionados <- reactiveValues(a = NULL , b = NULL)
@@ -278,9 +287,12 @@ server <- function(input, output, session) {
   algoritmo_tiempo <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
   key_tab3 <- reactiveValues(k = NULL)
+  
   m_confusion <- reactiveValues(list = c() , original = NULL , resultado = NULL , max = NULL)
   algoritmo_distancia_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   algoritmo_tiempo_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
+  df_mc <- reactiveValues(pgj_ssc = NULL , pgj_c5 = NULL , ssc_c5 = NULL)
+  parametros_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
   # ===== MAPA INICIAL =====
   output$mapa <- renderLeaflet({
@@ -1495,32 +1507,29 @@ server <- function(input, output, session) {
                           tags$p('Espere mientras se vinculan todos los Incidentes Viales', class = 'finalizar_defecto'),
                           tags$div(id = 'div_load_pgj', class = 'finalizar_defecto', style = 'display: block; margin: auto; width: 50%;',
                                    tags$img(src = 'loading.gif' , style = 'max-width:100%; max-height:100%; vertical-align: middle;'))))
-    print(m_confusion$list)
-    print(algoritmo_distancia$pgj_ssc)
-    print(algoritmo_distancia_mc$pgj_ssc)
-    # =====
+    # ===== Almacenar las Etiquetas para M. Confusión =====
     m_confusion$original <- filter(bd$unificada , id_global %in% m_confusion$list)
-    # =====
-    distancia_list <- list(mean(algoritmo_distancia$pgj_ssc) + 2*sd(algoritmo_distancia$pgj_ssc),
+    # ===== Generar los parámetros para algoritmo completo =====
+    distancia_list <- c(mean(algoritmo_distancia$pgj_ssc) + 2*sd(algoritmo_distancia$pgj_ssc),
                             mean(algoritmo_distancia$pgj_c5) + 2*sd(algoritmo_distancia$pgj_c5),
                             mean(algoritmo_distancia$ssc_c5) + 2*sd(algoritmo_distancia$ssc_c5))
-    tiempo_list <- list(mean(algoritmo_tiempo$pgj_ssc) + 2*sd(algoritmo_tiempo$pgj_ssc),
+    tiempo_list <- c(mean(algoritmo_tiempo$pgj_ssc) + 2*sd(algoritmo_tiempo$pgj_ssc),
                          mean(algoritmo_tiempo$pgj_c5) + 2*sd(algoritmo_tiempo$pgj_c5),
                          mean(algoritmo_tiempo$ssc_c5) + 2*sd(algoritmo_tiempo$ssc_c5))
-    # =====
+    # ===== Definición de Algoritmo de Vinculación =====
     algoritmo_sp <- function(fila , bd_sp) {
       bd_id <- paste0('id_' , bd_sp)
       # =====
       if(!is.na(fila[bd_id][[1]])) {
         return(as.character(fila[bd_id]))}
       # =====
-      if ((bd_sp == 'PGJ' & fila['id_original'][[1]] == 'SSC') | (bd_sp == 'SSC' & fila['id_original'][[1]] == 'PGJ')) {
+      if ((bd_sp == 'PGJ' & fila['base_original'][[1]] == 'SSC') | (bd_sp == 'SSC' & fila['base_original'][[1]] == 'PGJ')) {
         distancia_final <- distancia_list[1]
         tiempo_final <- tiempo_list[1]}
-      else if ((bd_sp == 'PGJ' & fila['id_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['id_original'][[1]] == 'PGJ')) {
+      else if ((bd_sp == 'PGJ' & fila['base_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['base_original'][[1]] == 'PGJ')) {
         distancia_final <- distancia_list[2]
         tiempo_final <- tiempo_list[2]}
-      else if ((bd_sp == 'SSC' & fila['id_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['id_original'][[1]] == 'SSC')) {
+      else if ((bd_sp == 'SSC' & fila['base_original'][[1]] == 'C5') | (bd_sp == 'C5' & fila['base_original'][[1]] == 'SSC')) {
         distancia_final <- distancia_list[3]
         tiempo_final <- tiempo_list[3]}
       # =====
@@ -1542,14 +1551,14 @@ server <- function(input, output, session) {
       else {
         return(as.character(posibles$id_original))}
     }
-    # ======
+    # ====== Ejecución Algoritmo para toda la Base Unificada =====
     for (bd_sp in input$filtro_bd) {
       id <- paste0('id_',bd_sp)
       bd$unificada[id] <- as.character(apply(bd$unificada , MARGIN = 1 , FUN = algoritmo_sp , bd_sp = bd_sp))
       a <- bd$unificada[bd$unificada[id] == 'character(0)' ,]$id_global
       bd$unificada[bd$unificada$id_global %in% a , id] <- NA
     }
-    # ======
+    # ====== Recuperación y arreglo de muestras para Matriz de Confusión =====
     m_confusion$resultado <- m_confusion$original
     m_confusion$resultado$id_PGJ <- NA
     m_confusion$resultado[m_confusion$resultado$base_original == 'PGJ' , 'id_PGJ'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'PGJ' , 'id_original'])
@@ -1557,29 +1566,230 @@ server <- function(input, output, session) {
     m_confusion$resultado[m_confusion$resultado$base_original == 'SSC' , 'id_SSC'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'SSC' , 'id_original'])
     m_confusion$resultado$id_C5 <- NA
     m_confusion$resultado[m_confusion$resultado$base_original == 'C5' , 'id_C5'] <- as.character(m_confusion$resultado[m_confusion$resultado$base_original == 'C5' , 'id_original'])
-    # =====
-    distancia_list <- list(mean(algoritmo_distancia_mc$pgj_ssc) + 2*sd(algoritmo_distancia_mc$pgj_ssc),
+    # ===== Redefinición de parámetros sólo para Matriz de Confusión =====
+    distancia_list <- c(mean(algoritmo_distancia_mc$pgj_ssc) + 2*sd(algoritmo_distancia_mc$pgj_ssc),
                            mean(algoritmo_distancia_mc$pgj_c5) + 2*sd(algoritmo_distancia_mc$pgj_c5),
                            mean(algoritmo_distancia_mc$ssc_c5) + 2*sd(algoritmo_distancia_mc$ssc_c5))
-    tiempo_list <- list(mean(algoritmo_tiempo_mc$pgj_ssc) + 2*sd(algoritmo_tiempo_mc$pgj_ssc),
+    tiempo_list <- c(mean(algoritmo_tiempo_mc$pgj_ssc) + 2*sd(algoritmo_tiempo_mc$pgj_ssc),
                         mean(algoritmo_tiempo_mc$pgj_c5) + 2*sd(algoritmo_tiempo_mc$pgj_c5),
                         mean(algoritmo_tiempo_mc$ssc_c5) + 2*sd(algoritmo_tiempo_mc$ssc_c5))
-    # =====
+    # ===== Ejecución del algoritmo para Matriz de Confusión =====
     for (bd_sp in input$filtro_bd) {
       id <- paste0('id_',bd_sp)
       m_confusion$resultado[id] <- as.character(apply(m_confusion$resultado , MARGIN = 1 , FUN = algoritmo_sp , bd_sp = bd_sp))
       a <- m_confusion$resultado[m_confusion$resultado[id] == 'character(0)' ,]$id_global
       m_confusion$resultado[m_confusion$resultado$id_global %in% a , id] <- NA
     }
-    # =====
-    m_confusion$original$timestamp <- format(m_confusion$original$timestamp , format = '%d/%m/%Y , %T')
-    m_confusion$resultado$timestamp <- format(m_confusion$resultado$timestamp , format = '%d/%m/%Y , %T')
-    m_confusion$original$geometry <- NULL
-    m_confusion$resultado$geometry <- NULL
-    # =====
-    write.csv(m_confusion$original , file = 'tmp/original.csv' , row.names = FALSE)
-    write.csv(m_confusion$resultado , file = 'tmp/resultado.csv' , row.names = FALSE)
+    # ===== Matriz de Confusión PGJ/SSC =====
+    values <- c(0 , 0 , 0 , 0)
+    for (i in m_confusion$original$id_global) {
+      a <- filter(m_confusion$original , id_global == i)
+      b <- filter(m_confusion$resultado , id_global == i)
+      # = PGJ / SSC
+      if (compareNA(a$id_PGJ , b$id_PGJ) & compareNA(a$id_SSC , b$id_SSC)) {
+        if (is.na(a$id_PGJ) | is.na(a$id_SSC)) values[4] <- values[4] + 1
+        else values[1] <- values[1] + 1
+      }
+      else {
+        if (!compareNA(a$id_PGJ , b$id_PGJ)) {
+          if (is.na(b$id_PGJ)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+        else {
+          if (is.na(b$id_SSC)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+      }
+    }
     # =
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , values[1] / (values[1] + values[3]))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , values[4] / (values[4] + values[2]))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , values[1] / (values[1] + values[2]))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , values[4] / (values[4] + values[3]))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , (values[1] + values[4]) / (sum(values)))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , (2*values[1])/((2*values[1])+values[2]+values[3]))
+    parametros_mc$pgj_ssc <- append(parametros_mc$pgj_ssc , parametros_mc$pgj_ssc[1] + parametros_mc$pgj_ssc[2] - 1)
+    # =
+    df <- data.frame(a = c(values[1] , values[3]) , b = c(values[2] , values[4]))
+    rownames(df) <- c('Vinculados' , 'Sin Vínculo')
+    df_mc$pgj_ssc <- df %>% rename('Vinculados'='a' , 'Sin Vínculo'='b')
+    # ===== Matriz de Confusión PGJ/C5 =====
+    values <- c(0 , 0 , 0 , 0)
+    for (i in m_confusion$original$id_global) {
+      a <- filter(m_confusion$original , id_global == i)
+      b <- filter(m_confusion$resultado , id_global == i)
+      # = PGJ / C5
+      if (compareNA(a$id_PGJ , b$id_PGJ) & compareNA(a$id_C5 , b$id_C5)) {
+        if (is.na(a$id_PGJ) | is.na(a$id_C5)) values[4] <- values[4] + 1
+        else values[1] <- values[1] + 1
+      }
+      else {
+        if (!compareNA(a$id_PGJ , b$id_PGJ)) {
+          if (is.na(b$id_PGJ)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+        else {
+          if (is.na(b$id_C5)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+      }
+    }
+    # =
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , values[1] / (values[1] + values[3]))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , values[4] / (values[4] + values[2]))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , values[1] / (values[1] + values[2]))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , values[4] / (values[4] + values[3]))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , (values[1] + values[4]) / (sum(values)))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , (2*values[1])/((2*values[1])+values[2]+values[3]))
+    parametros_mc$pgj_c5 <- append(parametros_mc$pgj_c5 , parametros_mc$pgj_c5[1] + parametros_mc$pgj_c5[2] - 1)
+    # =
+    df <- data.frame(a = c(values[1] , values[3]) , b = c(values[2] , values[4]))
+    rownames(df) <- c('Vinculados' , 'Sin Vínculo')
+    df_mc$pgj_c5 <- df %>% rename('Vinculados'='a' , 'Sin Vínculo'='b')
+    # ===== Matriz de Confusión SSC/C5 =====
+    values <- c(0 , 0 , 0 , 0)
+    for (i in m_confusion$original$id_global) {
+      a <- filter(m_confusion$original , id_global == i)
+      b <- filter(m_confusion$resultado , id_global == i)
+      # = SSC / C5
+      if (compareNA(a$id_SSC , b$id_SSC) & compareNA(a$id_C5 , b$id_C5)) {
+        if (is.na(a$id_SSC) | is.na(a$id_C5)) values[4] <- values[4] + 1
+        else values[1] <- values[1] + 1
+      }
+      else {
+        if (!compareNA(a$id_SSC , b$id_SSC)) {
+          if (is.na(b$id_SSC)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+        else {
+          if (is.na(b$id_C5)) values[3] <- values[3] + 1
+          else values[2] <- values[2] + 1
+        }
+      }
+    }
+    # =
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , values[1] / (values[1] + values[3]))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , values[4] / (values[4] + values[2]))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , values[1] / (values[1] + values[2]))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , values[4] / (values[4] + values[3]))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , (values[1] + values[4]) / (sum(values)))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , (2*values[1])/((2*values[1])+values[2]+values[3]))
+    parametros_mc$ssc_c5 <- append(parametros_mc$ssc_c5 , parametros_mc$ssc_c5[1] + parametros_mc$ssc_c5[2] - 1)
+    # =
+    df <- data.frame(a = c(values[1] , values[3]) , b = c(values[2] , values[4]))
+    rownames(df) <- c('Vinculados' , 'Sin Vínculo')
+    df_mc$ssc_c5 <- df %>% rename('Vinculados'='a' , 'Sin Vínculo'='b')
+    # ===== Generación de Tabla Unificada =====
+    
+    # === Totales
+    tmp <- filter(bd$unificada , base_original == 'PGJ') %>% select(id_original , id_SSC , id_C5)
+    tmp <- merge(x = pgj , y = tmp , by.x = 'id' , by.y = 'id_original')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_PGJ'='id.y')
+    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp <- merge(x = c5 , y = tmp , by.x = 'folio' , by.y = 'id_C5')
+    tmp$geometry <- NULL
+    tmp$id_global <- seq.int(nrow(tmp))
+    tmp <- tmp %>% rename('id_C5'='folio')
+    tmp$fecha_incidente <- format(tmp$timestamp , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp , format = '%T')
+    bd$incidentes_viales <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                                     delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                                     no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                                     codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    
+    # === PGJ / SSC
+    tmp <- filter(bd$unificada , base_original == 'PGJ') %>% select(id_original , id_SSC , id_C5)
+    tmp <- merge(x = pgj , y = tmp , by.x = 'id' , by.y = 'id_original')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_PGJ'='id.y')
+    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp <- filter(tmp , !id_PGJ %in% bd$incidentes_viales$id_PGJ)
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp.x , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp.x , format = '%T')
+    tmp$id_C5 <- NA
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # === PGJ/C5
+    tmp <- filter(bd$unificada , base_original == 'PGJ') %>% select(id_original , id_SSC , id_C5)
+    tmp <- merge(x = pgj , y = tmp , by.x = 'id' , by.y = 'id_original')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp <- merge(x = c5 , y = tmp , by.x = 'folio' , by.y = 'id_C5')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_C5'='folio' , 'id_PGJ' = 'id')
+    tmp <- filter(tmp , !id_PGJ %in% bd$incidentes_viales$id_PGJ)
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp.x , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp.x , format = '%T')
+    tmp$id_SSC <- NA
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # === SSC/C5
+    tmp <- filter(bd$unificada , base_original == 'SSC') %>% select(id_original , id_C5)
+    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_original')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp <- merge(x = c5 , y = tmp , by.x = 'folio' , by.y = 'id_C5')
+    tmp$geometry <- NULL
+    tmp <- tmp %>% rename('id_C5'='folio' , 'id_SSC' = 'id')
+    tmp <- filter(tmp , !id_SSC %in% bd$incidentes_viales$id_SSC)
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp.x , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp.x , format = '%T')
+    tmp$id_PGJ <- NA
+    tmp <- tmp %>% rename('calle_hechos'='punto_1' , 'colonia_hechos' = 'colonia' , 'alcaldia_hechos' = 'alcaldia')
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # === PGJ
+    tmp <- filter(pgj , id %in% filter(bd$unificada , !is.na(id_PGJ) , is.na(id_SSC) , is.na(id_C5))$id_original)
+    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp , format = '%T')
+    tmp$id_SSC <- NA
+    tmp$id_C5 <- NA
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # =====
     # Sys.sleep(5)
     removeModal()
     key_tab3$k <- 1
@@ -1637,7 +1847,7 @@ server <- function(input, output, session) {
   })
   
   # ===== MATRIZ DE CONFUSIÓN =====
-  
+  # observeEvent(input$generar_bd , key_tab3$k <- 1)
   
   output$menu_3 <- renderMenu({
     if (is.null(key_tab3$k)) NULL
@@ -1653,7 +1863,35 @@ server <- function(input, output, session) {
   
   mapa_proxy2 <- leafletProxy('mapa_2')
   
+  output$confusion_pgj.ssc <- renderTable(df_mc$pgj_ssc , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
   
+  output$sens_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[1] , 2))
+  output$esp_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[2] , 2))
+  output$ppv_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[3] , 2))
+  output$npv_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[4] , 2))
+  output$acc_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[5] , 2))
+  output$f1_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[6] , 2))
+  output$iy_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[7] , 2))
+  
+  output$confusion_pgj.c5 <- renderTable(df_mc$pgj_c5 , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
+
+  output$sens_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[1] , 2))
+  output$esp_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[2] , 2))
+  output$ppv_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[3] , 2))
+  output$npv_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[4] , 2))
+  output$acc_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[5] , 2))
+  output$f1_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[6] , 2))
+  output$iy_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[7] , 2))
+
+  output$confusion_ssc.c5 <- renderTable(df_mc$ssc_c5 , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
+
+  output$sens_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[1] , 2))
+  output$esp_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[2] , 2))
+  output$ppv_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[3] , 2))
+  output$npv_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[4] , 2))
+  output$acc_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[5] , 2))
+  output$f1_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[6] , 2))
+  output$iy_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[7] , 2))
   
   
   # ===== MAPA RESULTADOS =====
