@@ -266,7 +266,27 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                                                          tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_ssc.c5')),
                                                                                                          tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_ssc.c5'))))
                                                                                          ),
-                                                                                tabPanel(title = 'Visualización en Mapa')))
+                                                                                tabPanel(title = 'Resultados del Algoritmo',
+                                                                                         tags$p(strong('Vínculos Logrados') , style = 'color: #848888; font-size: 16pt;'),
+                                                                                         fluidRow(column(7,
+                                                                                                         plotOutput(outputId = 'diagrama_venn')),
+                                                                                                  column(5,
+                                                                                                         tags$p(strong('Total de Incidentes Viales – ') , textOutput(outputId = 'resultados_t' , inline = TRUE)),
+                                                                                                         tags$p(strong('Incidentes Registrados por PGJ' , '(', textOutput(outputId = 'resultados_pgja' , inline = TRUE) , ')')),
+                                                                                                         tags$ul(tags$li('Existentes en SSC – ' , textOutput(outputId = 'resultados_pgjb' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes en C5 – ' , textOutput(outputId = 'resultados_pgjc' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes sólo en PGJ – ' , textOutput(outputId = 'resultados_pgjd' , inline = TRUE))),
+                                                                                                         tags$p(strong('Incidentes Registrados por SSC' , '(', textOutput(outputId = 'resultados_ssca' , inline = TRUE) , ')')),
+                                                                                                         tags$ul(tags$li('Existentes en PGJ – ' , textOutput(outputId = 'resultados_sscb' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes en C5 – ' , textOutput(outputId = 'resultados_sscc' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes sólo en SSC – ' , textOutput(outputId = 'resultados_sscd' , inline = TRUE))),
+                                                                                                         tags$p(strong('Incidentes Registrados por C5' , '(', textOutput(outputId = 'resultados_c5a' , inline = TRUE) , ')')),
+                                                                                                         tags$ul(tags$li('Existentes en PGJ – ' , textOutput(outputId = 'resultados_c5b' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes en SSC – ' , textOutput(outputId = 'resultados_c5c' , inline = TRUE)),
+                                                                                                                 tags$li('Existentes sólo en C5 – ' , textOutput(outputId = 'resultados_c5d' , inline = TRUE)))
+                                                                                                         )),
+                                                                                         tags$p(strong('Desempeño del Algoritmo') , style = 'color: #848888; font-size: 16pt;')
+                                                                                         )))
                                                             )))
                                   )))
 
@@ -293,6 +313,8 @@ server <- function(input, output, session) {
   algoritmo_tiempo_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   df_mc <- reactiveValues(pgj_ssc = NULL , pgj_c5 = NULL , ssc_c5 = NULL)
   parametros_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
+  
+  d_venn <- reactiveValues(grafica = NULL , values = c())
   
   # ===== MAPA INICIAL =====
   output$mapa <- renderLeaflet({
@@ -1789,6 +1811,83 @@ server <- function(input, output, session) {
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
     
+    # === SSC
+    tmp <- filter(ssc , id %in% filter(bd$unificada , is.na(id_PGJ) , !is.na(id_SSC) , is.na(id_C5))$id_original)
+    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp , format = '%T')
+    tmp$id_PGJ <- NA
+    tmp$id_C5 <- NA
+    tmp <- tmp %>% rename('calle_hechos'='punto_1' , 'colonia_hechos'='colonia' , 'alcaldia_hechos'='alcaldia')
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # === C5
+    tmp <- filter(c5 , folio %in% filter(bd$unificada , is.na(id_PGJ) , is.na(id_SSC) , !is.na(id_C5))$id_original)
+    tmp <- tmp %>% rename('id_C5'='folio')
+    tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
+    tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
+    tmp$geometry <- NULL
+    tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
+    tmp$fecha_incidente <- format(tmp$timestamp , format = '%d/%m/%Y')
+    tmp$hora_incidente <- format(tmp$timestamp , format = '%T')
+    tmp$id_PGJ <- NA
+    tmp$id_SSC <- NA
+    tmp <- tmp %>% rename('alcaldia_hechos'='delegacion_inicio')
+    tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
+    tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
+                          delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
+                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
+    bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
+    bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
+    
+    # ===== Diagrama de Venn =====
+    venn <- data.frame(x = c(0, 0.866, -0.866),
+                       y = c(1, -0.5, -0.5),
+                       labels = c('PGJ', 'C5', 'SSC'))
+    # =
+    venn.values <- c()
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , !is.na(id_PGJ) & is.na(id_SSC) & is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , !is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , is.na(id_PGJ) & !is.na(id_SSC) & is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , !is.na(id_PGJ) & !is.na(id_SSC) & is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))))
+    venn.values <- append(venn.values , nrow(filter(bd$incidentes_viales , !is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))))
+    # =
+    venn.txt <- data.frame(x = c(0 , 1.2 , 0.8 , -1.2 , -0.8 , 0 , 0),
+                           y = c(1.2 , -0.6 , 0.5 , -0.6 , 0.5 , -1 , 0),
+                           # valores = c('PGJ' , 'C5' , 'PGJ/C5' , 'SSC' , 'PGJ/SSC' , 'SSC/C5' , 'Todos')
+                           valores = venn.values
+    )
+    # =
+    grafica <- ggplot(venn, aes(x0 = x, y0 = y, r = 1.5, fill = labels , color = labels)) +
+      geom_circle(alpha = .3, size = 1) +
+      coord_fixed() +
+      theme_void() +
+      theme(legend.position = 'bottom') +
+      scale_fill_manual(values = c('#952800' , '#043A5F' , '#956F00'),
+                        limits = c('PGJ' , 'SSC' , 'C5'),
+                        name = 'Fuente de Datos' ,
+                        labels = c('PGJ' , 'SSC' , 'C5')) +
+      scale_color_manual(values = c('#952800' , '#043A5F' , '#956F00'),
+                         limits = c('PGJ' , 'SSC' , 'C5'),
+                         name = 'Fuente de Datos' ,
+                         labels = c('PGJ' , 'SSC' , 'C5')) +
+      annotate('text' , x = venn.txt$x , y = venn.txt$y , label = venn.txt$valores , size = 5)
+    # =
+    d_venn$grafica <- grafica
+    d_venn$values <- venn.values
     # =====
     # Sys.sleep(5)
     removeModal()
@@ -1846,6 +1945,26 @@ server <- function(input, output, session) {
     updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
   })
   
+  # ===== DIAGRAMA DE VENN =====
+  output$diagrama_venn <- renderPlot(d_venn$grafica)
+  
+  output$resultados_t <- renderText(sum(d_venn$values))
+  
+  output$resultados_pgja <- renderText(d_venn$values[1] + d_venn$values[3] + d_venn$values[5] + d_venn$values[7])
+  output$resultados_pgjb <- renderText(d_venn$values[5] + d_venn$values[7])
+  output$resultados_pgjc <- renderText(d_venn$values[3] + d_venn$values[7])
+  output$resultados_pgjd <- renderText(d_venn$values[1])
+  
+  output$resultados_ssca <- renderText(d_venn$values[4] + d_venn$values[5] + d_venn$values[6] + d_venn$values[7])
+  output$resultados_sscb <- renderText(d_venn$values[5] + d_venn$values[7])
+  output$resultados_sscc <- renderText(d_venn$values[6] + d_venn$values[7])
+  output$resultados_sscd <- renderText(d_venn$values[4])
+  
+  output$resultados_c5a <- renderText(d_venn$values[2] + d_venn$values[3] + d_venn$values[6] + d_venn$values[7])
+  output$resultados_c5b <- renderText(d_venn$values[3] + d_venn$values[7])
+  output$resultados_c5c <- renderText(d_venn$values[6] + d_venn$values[7])
+  output$resultados_c5d <- renderText(d_venn$values[2])
+  
   # ===== MATRIZ DE CONFUSIÓN =====
   # observeEvent(input$generar_bd , key_tab3$k <- 1)
   
@@ -1892,6 +2011,7 @@ server <- function(input, output, session) {
   output$acc_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[5] , 2))
   output$f1_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[6] , 2))
   output$iy_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[7] , 2))
+  
   
   
   # ===== MAPA RESULTADOS =====
