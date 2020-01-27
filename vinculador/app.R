@@ -228,45 +228,11 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                          ))))),
                                     # ===== TAB RESULTADOS =====
                                     tabItem(tabName = 'resultados',
-                                            fluidRow(column(6 , withSpinner(leafletOutput(outputId = 'mapa_2', height = '756px'),
+                                            fluidRow(column(6 , withSpinner(leafletOutput(outputId = 'mapa_2', height = '900px'),
                                                                             type = 3 , color = '#002A24' , size = 2, color.background = '#ecf0f5'),
-                                                            tags$div(style = 'width: 100%; height: 20px; background-color: white; opacity: 0;'),
-                                                            fluidRow(box(width = 12,
-                                                                         sliderInput(inputId = 'resultados_fecha' , label = 'Periodo de Tiempo' , width = '100%', timeFormat = '%d/%m/%Y',
-                                                                                     min = as.Date('2018-01-01',"%Y-%m-%d"),
-                                                                                     max = as.Date('2018-12-31',"%Y-%m-%d"),
-                                                                                     value = c(as.Date('2018-01-01',"%Y-%m-%d") , as.Date('2018-12-31',"%Y-%m-%d")))))),
+                                                            tags$div(style = 'width: 100%; height: 20px; background-color: white; opacity: 0;')),
                                                      column(6 , box(width = 12,
-                                                                    tabsetPanel(tabPanel(title = 'Precisión del Algoritmo',
-                                                                                         tags$p(strong('Vínculos PGJ / SSC')),
-                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_pgj.ssc')),
-                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_pgj.ssc')),
-                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_pgj.ssc')),
-                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_pgj.ssc')),
-                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_pgj.ssc')),
-                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_pgj.ssc')),
-                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_pgj.ssc')),
-                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_pgj.ssc')))),
-                                                                                         tags$p(strong('Vínculos PGJ / C5')),
-                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_pgj.c5')),
-                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_pgj.c5')),
-                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_pgj.c5')),
-                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_pgj.c5')),
-                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_pgj.c5')),
-                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_pgj.c5')),
-                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_pgj.c5')),
-                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_pgj.c5')))),
-                                                                                         tags$p(strong('Vínculos SSC / C5')),
-                                                                                         fluidRow(column(6, tableOutput(outputId = 'confusion_ssc.c5')),
-                                                                                                  column(6, tags$p(strong('Sensibilidad –') , textOutput(inline = TRUE , outputId = 'sens_ssc.c5')),
-                                                                                                         tags$p(strong('Especificidad –') , textOutput(inline = TRUE , outputId = 'esp_ssc.c5')),
-                                                                                                         tags$p(strong('Valor Predictivo Positivo –') , textOutput(inline = TRUE , outputId = 'ppv_ssc.c5')),
-                                                                                                         tags$p(strong('Valor Predictivo Negativo –') , textOutput(inline = TRUE , outputId = 'npv_ssc.c5')),
-                                                                                                         tags$p(strong('Precisión del Algoritmo –') , textOutput(inline = TRUE , outputId = 'acc_ssc.c5')),
-                                                                                                         tags$p(strong('Valor F –') , textOutput(inline = TRUE , outputId = 'f1_ssc.c5')),
-                                                                                                         tags$p(strong('Índice de Youden –') , textOutput(inline = TRUE , outputId = 'iy_ssc.c5'))))
-                                                                                         ),
-                                                                                tabPanel(title = 'Resultados del Algoritmo',
+                                                                    tabsetPanel(tabPanel(title = 'Resultados del Algoritmo',
                                                                                          tags$p(strong('Vínculos Logrados') , style = 'color: #848888; font-size: 16pt;'),
                                                                                          fluidRow(column(7,
                                                                                                          plotOutput(outputId = 'diagrama_venn')),
@@ -285,7 +251,58 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                                                                  tags$li('Existentes en SSC – ' , textOutput(outputId = 'resultados_c5c' , inline = TRUE)),
                                                                                                                  tags$li('Existentes sólo en C5 – ' , textOutput(outputId = 'resultados_c5d' , inline = TRUE)))
                                                                                                          )),
-                                                                                         tags$p(strong('Desempeño del Algoritmo') , style = 'color: #848888; font-size: 16pt;')
+                                                                                         tags$p(strong('Desempeño del Algoritmo') , style = 'color: #848888; font-size: 16pt;'),
+                                                                                         tableOutput(outputId = 'tabla_desempeño'),
+                                                                                         downloadButton(outputId = 'boton_descarga' , label = strong('Descargar Base de Datos Vinculada'))
+                                                                                         ),
+                                                                                tabPanel(title = 'Visualización en Mapa' , 
+                                                                                         tags$p(strong('Filtros Aplicables') , style = 'color: #848888; font-size: 16pt;'),
+                                                                                         selectInput(inputId = 'resultados_lugar' , label = 'Área de Análisis',
+                                                                                                     choices = c('Total Ciudad de México' , 'Álvaro Obregón' , 'Azcapotzalco' , 'Benito Juárez' , 'Coyoacán',
+                                                                                                                 'Cuajimalpa de Morelos' , 'Cuauhtémoc' , 'Gustavo A. Madero' ,
+                                                                                                                 'Iztacalco' , 'Iztapalapa' , 'La Magdalena Contreras' , 'Miguel Hidalgo',
+                                                                                                                 'Milpa Alta' , 'Tlalpan' , 'Tláhuac' , 'Venustiano Carranza', 'Xochimilco')),
+                                                                                         sliderInput(inputId = 'resultados_fecha' , label = 'Periodo de Tiempo' , width = '100%', timeFormat = '%d/%m/%Y',
+                                                                                                     min = as.Date('2018-01-01',"%Y-%m-%d"),
+                                                                                                     max = as.Date('2018-12-31',"%Y-%m-%d"),
+                                                                                                     value = c(as.Date('2018-01-01',"%Y-%m-%d") , as.Date('2018-12-31',"%Y-%m-%d"))),
+                                                                                         checkboxGroupInput(inputId = 'resultados_vinc' , label = 'Vínculos a Visualizar' , inline = TRUE,
+                                                                                                            choices = c('Vínculos Totales' , 'Vínculos Parciales' , 'Sin Vínculo'),
+                                                                                                            selected = c('Vínculos Totales' , 'Vínculos Parciales' , 'Sin Vínculo')),
+                                                                                         tabsetPanel(
+                                                                                           tabPanel(title = 'Gráficas por Totales',
+                                                                                                    selectInput(inputId = 'tipo_grafica', label = 'Datos a Graficar', choices = ''),
+                                                                                                    fluidRow(column(9,
+                                                                                                                    radioButtons(inputId = 'tiempo_grafica' , label = 'Temporalidad a Graficar', inline = TRUE,
+                                                                                                                                 choices = c('Por Mes' , 'Por Día') , selected = 'Por Mes')),
+                                                                                                             column(2, offset = 1,
+                                                                                                                    actionButton(inputId = 'boton_zoom_grafica' , label = NULL , icon = icon('search-plus'),
+                                                                                                                                 style = 'font-size:150%'))),
+                                                                                                    withSpinner(plotOutput(outputId = 'grafica_sp', height = '350px',
+                                                                                                                           click = clickOpts(id = 'plot_click')),
+                                                                                                                type = 3 , color = '#00A65A' , size = 1 , color.background = '#FFFFFF'),
+                                                                                                    uiOutput(outputId = 'click_info'),
+                                                                                                    tags$div(id = 'div_grafica_a'),
+                                                                                                    tags$div(tableOutput(outputId = 'tabla_totales'),
+                                                                                                             style = 'font-size: 80%; width: 100%; margin: auto;')),
+                                                                                           tabPanel(title = 'Gráficas por Día y Hora',
+                                                                                                    selectInput(inputId = 'tipo_grafica2', label = 'Datos a Graficar', choices = ''),
+                                                                                                    fluidRow(column(9,
+                                                                                                                    radioButtons(inputId = 'tiempo_grafica2' , label = 'Temporalidad a Graficar', inline = TRUE,
+                                                                                                                                 choices = c('Todo el Día' , 'Mañana (6AM - 12PM)' , 'Tarde (1PM - 9PM)' , 'Noche (10PM - 5AM)') , selected = 'Todo el Día')),
+                                                                                                             column(2, offset = 1,
+                                                                                                                    actionButton(inputId = 'boton_zoom_grafica2' , label = NULL , icon = icon('search-plus'),
+                                                                                                                                 style = 'font-size:150%'))),
+                                                                                                    withSpinner(plotOutput(outputId = 'grafica_sp2', height = '350px',
+                                                                                                                           click = clickOpts(id = 'plot_click2')),
+                                                                                                                type = 3 , color = '#00A65A' , size = 1 , color.background = '#FFFFFF'),
+                                                                                                    uiOutput(outputId = 'click_info2'),
+                                                                                                    tags$div(id = 'div_grafica_a2'),
+                                                                                                    fluidRow(column(1 , actionButton(inputId = 'pastel_left' , icon = icon('angle-left') , label = NULL)),
+                                                                                                             column(10 , textInput(inputId = 'pastel_texto' , label = NULL , value = '')),
+                                                                                                             column(1 , actionButton(inputId = 'pastel_right' , icon = icon('angle-right') , label = NULL))),
+                                                                                                    plotOutput(outputId = 'grafica_pastel' , height = '50px'))
+                                                                                         )
                                                                                          )))
                                                             )))
                                   )))
@@ -298,7 +315,7 @@ server <- function(input, output, session) {
   special_bd <- reactiveValues(active_pgj = pgj , active_c5 = c5)
   key_remote <- reactiveValues(k_pgj = FALSE , k_c5 = FALSE , k_rndm = FALSE)
   
-  bd <- reactiveValues(unificada = NULL , reference = NULL , muestra = NULL , posibles = NULL , incidentes_viales = NULL)
+  bd <- reactiveValues(unificada = NULL , reference = NULL , muestra = NULL , posibles = NULL , incidentes_viales = NULL , iv_tmp = NULL)
   count_muestra <- reactiveValues(i = 1 , max = NULL)
   eventos_mapa <- reactiveValues(principal = NULL , aux1 = NULL , aux1_t = NULL , aux2 = NULL , aux2_t = NULL)
   seleccionados <- reactiveValues(a = NULL , b = NULL)
@@ -315,6 +332,9 @@ server <- function(input, output, session) {
   parametros_mc <- reactiveValues(pgj_ssc = c() , pgj_c5 = c() , ssc_c5 = c())
   
   d_venn <- reactiveValues(grafica = NULL , values = c())
+  
+  filtro_fecha_sp <- reactive(input$resultados_fecha) %>% debounce(1500)
+  filtro_bd_sp <- reactive(input$resultados_vinc) %>% debounce(1000)
   
   # ===== MAPA INICIAL =====
   output$mapa <- renderLeaflet({
@@ -1945,7 +1965,23 @@ server <- function(input, output, session) {
     updateTabItems(session , inputId = 'menu_completo' , selected = 'resultados')
   })
   
+  # ===== MAPA PARA RESULTADOS =====
+  output$menu_3 <- renderMenu({
+    if (is.null(key_tab3$k)) NULL
+    else menuItem(text = 'Resultados', icon = icon('chart-bar') , tabName = 'resultados')
+  })
+  
+  output$mapa_2 <- renderLeaflet({
+    leaflet(data = cdmx_sa) %>%
+      addTiles(urlTemplate = '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
+      setView(lng = -99.152613 , lat = 19.320497, zoom = 11) %>%
+      addPolygons(fillColor = '#57948B' , fillOpacity = 0.25 , color = '#002A24' , opacity = 0.75)
+  })
+  
+  mapa_proxy2 <- leafletProxy('mapa_2')
+  
   # ===== DIAGRAMA DE VENN =====
+  
   output$diagrama_venn <- renderPlot(d_venn$grafica)
   
   output$resultados_t <- renderText(sum(d_venn$values))
@@ -1965,132 +2001,60 @@ server <- function(input, output, session) {
   output$resultados_c5c <- renderText(d_venn$values[6] + d_venn$values[7])
   output$resultados_c5d <- renderText(d_venn$values[2])
   
-  # ===== MATRIZ DE CONFUSIÓN =====
-  # observeEvent(input$generar_bd , key_tab3$k <- 1)
-  
-  output$menu_3 <- renderMenu({
-    if (is.null(key_tab3$k)) NULL
-    else menuItem(text = 'Resultados', icon = icon('chart-bar') , tabName = 'resultados')
+  output$tabla_desempeño <- renderTable(width = '100%' , rownames = TRUE , digits = 2 , align = 'c' , {
+    df <- data.frame(a = as.numeric() , b = as.numeric() , c = as.numeric() , d = as.numeric())
+    # =
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[1] , parametros_mc$pgj_c5[1] , parametros_mc$ssc_c5[1] , ((parametros_mc$pgj_ssc[1] + parametros_mc$pgj_c5[1] + parametros_mc$ssc_c5[1])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[2] , parametros_mc$pgj_c5[2] , parametros_mc$ssc_c5[2] , ((parametros_mc$pgj_ssc[2] + parametros_mc$pgj_c5[2] + parametros_mc$ssc_c5[2])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[3] , parametros_mc$pgj_c5[3] , parametros_mc$ssc_c5[3] , ((parametros_mc$pgj_ssc[3] + parametros_mc$pgj_c5[3] + parametros_mc$ssc_c5[3])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[4] , parametros_mc$pgj_c5[4] , parametros_mc$ssc_c5[4] , ((parametros_mc$pgj_ssc[4] + parametros_mc$pgj_c5[4] + parametros_mc$ssc_c5[4])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[5] , parametros_mc$pgj_c5[5] , parametros_mc$ssc_c5[5] , ((parametros_mc$pgj_ssc[5] + parametros_mc$pgj_c5[5] + parametros_mc$ssc_c5[5])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[6] , parametros_mc$pgj_c5[6] , parametros_mc$ssc_c5[6] , ((parametros_mc$pgj_ssc[6] + parametros_mc$pgj_c5[6] + parametros_mc$ssc_c5[6])/3))
+    df[nrow(df) + 1,] <- c(parametros_mc$pgj_ssc[7] , parametros_mc$pgj_c5[7] , parametros_mc$ssc_c5[7] , ((parametros_mc$pgj_ssc[7] + parametros_mc$pgj_c5[7] + parametros_mc$ssc_c5[7])/3))
+    # =
+    df <- df %>% rename('PGJ / SSC' = 'a' , 'PGJ / C5' = 'b' , 'SSC / C5' = 'c' , 'Promedio del Algoritmo'='d')
+    rownames(df) <- c('Sensibilidad' , 'Especificidad' , 'Valor Predictivo Positivo' , 'Valor Predictivo Negativo' , 'Precisión' , 'Estadístico F1' , 'Índice de Youden')
+    df
   })
   
-  output$mapa_2 <- renderLeaflet({
-    leaflet(data = cdmx_sa) %>%
-      addTiles(urlTemplate = '//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
-      setView(lng = -99.152613 , lat = 19.320497, zoom = 11) %>%
-      addPolygons(fillColor = '#57948B' , fillOpacity = 0.25 , color = '#002A24' , opacity = 0.75)
+  output$boton_descarga <- downloadHandler(filename = function() {'incidentes_viales.csv'},
+                                           content = function(file) {
+                                             write.csv(bd$incidentes_viales , file , row.names = FALSE , na = '')
+                                           })
+  
+  # ===== VISUALIZACIÓN DE RESULTADOS =====
+  
+  # Actualizar Fecha del Slider
+  observeEvent(key_tab3$k , {
+    if (!is.null(key_tab3$k)) {
+      updateSliderInput(session , inputId = 'resultados_fecha' ,
+                        min = as.Date(input$filtro_fecha[1],"%Y-%m-%d"),
+                        max = as.Date(input$filtro_fecha[2],"%Y-%m-%d"),
+                        value = c(as.Date(input$filtro_fecha[1],"%Y-%m-%d") , as.Date(input$filtro_fecha[2],"%Y-%m-%d")))
+    }
   })
   
-  mapa_proxy2 <- leafletProxy('mapa_2')
+  # Actualizar Resultados a Visualizar
+  observeEvent(c(input$resultados_lugar , input$resultados_vinc , input$resultados_fecha) , {
+    if (!is.null(bd$incidentes_viales)) {
+      bd$iv_tmp <- bd$incidentes_viales
+      # =
+      # if (!'Vínculos Totales' %in% input$resultados_vinc) {
+      #   bd$iv_tmp <- filter(bd$iv_tmp , )
+      # }
+      # =
+      bd$iv_tmp$timestamp <- chron(dates(bd$incidentes_viales$fecha_incidente , format = 'd/m/y') , times(bd$incidentes_viales$hora_incidente))
+      bd$iv_tmp <- filter(bd$iv_tmp , timestamp >= dates(as.character(input$resultados_fecha[1]) , format = 'y-m-d') & timestamp <= dates(as.character(input$resultados_fecha[2]) , format = 'y-m-d'))
+      # =
+      bd$iv_tmp <- st_transform(st_as_sf(bd$iv_tmp , coords = c('lon','lat') , crs = 4326), 32614)
+      if (input$resultados_lugar != 'Total Ciudad de México') {
+        tmp_contains <- st_contains(st_transform(filter(cdmx , nom_mun == input$resultados_lugar), 32614) , bd$iv_tmp)
+        bd$iv_tmp <- bd$iv_tmp[tmp_contains[[1]],]
+      }
+      # =
+    }
+  })
   
-  output$confusion_pgj.ssc <- renderTable(df_mc$pgj_ssc , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
-  
-  output$sens_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[1] , 2))
-  output$esp_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[2] , 2))
-  output$ppv_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[3] , 2))
-  output$npv_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[4] , 2))
-  output$acc_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[5] , 2))
-  output$f1_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[6] , 2))
-  output$iy_pgj.ssc <- renderText(round(parametros_mc$pgj_ssc[7] , 2))
-  
-  output$confusion_pgj.c5 <- renderTable(df_mc$pgj_c5 , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
-
-  output$sens_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[1] , 2))
-  output$esp_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[2] , 2))
-  output$ppv_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[3] , 2))
-  output$npv_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[4] , 2))
-  output$acc_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[5] , 2))
-  output$f1_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[6] , 2))
-  output$iy_pgj.c5 <- renderText(round(parametros_mc$pgj_c5[7] , 2))
-
-  output$confusion_ssc.c5 <- renderTable(df_mc$ssc_c5 , rownames = TRUE , width = '100%' , digits = 0 , align = 'c')
-
-  output$sens_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[1] , 2))
-  output$esp_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[2] , 2))
-  output$ppv_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[3] , 2))
-  output$npv_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[4] , 2))
-  output$acc_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[5] , 2))
-  output$f1_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[6] , 2))
-  output$iy_ssc.c5 <- renderText(round(parametros_mc$ssc_c5[7] , 2))
-  
-  
-  
-  # ===== MAPA RESULTADOS =====
-  # observeEvent(input$resultados_bd , ignoreNULL = FALSE ,{
-  #   tmp <- iv[1,]
-  #   tmp <- tmp[-1,]
-  #   if ('Totales' %in% input$resultados_bd) {
-  #     a <- iv[1:159,]
-  #     tmp <- rbind(tmp , a)}
-  #   if ('Parciales' %in% input$resultados_bd) {
-  #     a <- iv[160:324,]
-  #     tmp <- rbind(tmp , a)}
-  #   if ('Nulos' %in% input$resultados_bd) {
-  #     a <- iv[160:643,]
-  #     tmp <- rbind(tmp , a)}
-  #   # =
-  #   mapa_proxy2 %>%
-  #     clearMarkers() %>%
-  #     addCircleMarkers(data = st_transform(tmp, 4326))
-  # })
-  # 
-  # output$grafica_sp <- renderPlot({
-  #   if (input$tipo_grafica == 'Total de Incidentes') {
-  #     count_pgj <- iv
-  #     count_pgj$geometry <- NULL
-  #     count_pgj <- count(count_pgj , month(timestamp)) %>% rename('mes'='month(timestamp)')
-  #     count_pgj$etiqueta <- count_pgj$mes
-  #     # =
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 1] <- 'Ene'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 2] <- 'Feb'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 3] <- 'Mar'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 4] <- 'Abr'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 5] <- 'May'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 6] <- 'Jun'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 7] <- 'Jul'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 8] <- 'Ago'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 9] <- 'Sep'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 10] <- 'Oct'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 11] <- 'Nov'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 12] <- 'Dic'
-  #     # =
-  #     grafica = ggplot() +
-  #       geom_line(data = count_pgj , aes(x = mes , y = n) , size = 1) +
-  #       scale_x_continuous(breaks = count_pgj$mes,
-  #                          minor_breaks = NULL,
-  #                          labels = count_pgj$etiqueta) +
-  #       labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
-  #     grafica
-  #   }
-  #   else {
-  #     count_pgj <- iv
-  #     count_pgj$geometry <- NULL
-  #     count_pgj[is.na(count_pgj$tipo_vehiculo_1), 'tipo_vehiculo_1'] <- 'SD'
-  #     count_pgj <- count(count_pgj , month(timestamp) , tipo_vehiculo_1 , .drop = FALSE) %>% rename('mes'='month(timestamp)')
-  #     count_pgj$etiqueta <- count_pgj$mes
-  #     # =
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 1] <- 'Ene'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 2] <- 'Feb'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 3] <- 'Mar'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 4] <- 'Abr'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 5] <- 'May'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 6] <- 'Jun'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 7] <- 'Jul'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 8] <- 'Ago'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 9] <- 'Sep'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 10] <- 'Oct'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 11] <- 'Nov'
-  #     count_pgj$etiqueta[count_pgj$etiqueta == 12] <- 'Dic'
-  #     # =
-  #     tmp <- filter(count_pgj , tipo_vehiculo_1 != 'SD')
-  #     grafica = ggplot() +
-  #       geom_line(data = tmp , aes(x = mes , y = n , color = tipo_vehiculo_1) , size = 1) +
-  #       scale_x_continuous(breaks = tmp$mes,
-  #                          minor_breaks = NULL,
-  #                          labels = tmp$etiqueta) +
-  #       labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes' , color = 'Tipo de Vehículo')
-  #     grafica
-  #   }
-  # })
 }
 
 shinyApp(ui = ui, server = server)
