@@ -141,23 +141,26 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
     # ===== TAB INTRODUCCIÓN =====
     tabItem(tabName = 'introduccion' ,
             tags$div(style = 'width: 100%; height: 90vh; text-align: center; padding-top: 10vh;',
-                     tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
-                     tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
-                     tags$div(style = 'text-align: justify; margin: auto; width: 60%; font-size: 12pt; color: #697070;',
-                       tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
-                       tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)') ,', la ', strong('Procuraduría General de Justicia (PGJ)') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)') ,', la aseguradora ', strong('AXA') ,' y el proyecto colaborativo ', strong('Repubikla') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
-                       tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
-                     tags$div(style = 'margin: auto; width: 60%; font-size: 24pt;',
-                              fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador' , label = strong('Ir a Visualizador') , icon = icon('globe-americas') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 18pt;')),
-                                       column(6 , actionButton(inputId = 'boton_ver_bd' , label = strong('Analizar Bases de Datos') , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 18pt;')))),
-                     tags$div(style = 'margin: auto; width: 70%; text-align: left; color: #848888;',
-                              tags$p(strong('Realizado en colaboración por:'))),
-                     tags$div(style = 'margin: auto; width: 70%;',
-                              fluidRow(column(3, tags$img(src = 'logo_semovi.png' , style = 'height: 45px;')),
-                                       column(2, tags$img(src = 'axa.png' , style = 'height: 50px;')),
-                                       column(2, tags$img(src = 'conacyt.png' , style = 'height: 50px;')),
-                                       column(2, tags$img(src = 'centrogeo.png' , style = 'height: 50px;')),
-                                       column(3, tags$img(src = 'datalab.png' , style = 'height: 30px;')))))),
+                     tags$div(style = 'background-color: white; margin: auto; width: 70%; padding: 30px; border-radius: 10px;',
+                              tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
+                              tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
+                              tags$div(style = 'text-align: justify; margin: auto; width: 80%; font-size: 12pt; color: #697070;',
+                                       tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
+                                       tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)' , style = 'color: #043A5F;') ,', la ', strong('Procuraduría General de Justicia (PGJ)' , style = 'color: #952800;') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)' , style = 'color: #956F00;') ,', la aseguradora ', strong('AXA' , style = 'color: #5E0061;') ,' y el proyecto colaborativo ', strong('Repubikla' , style = 'color: #3F8500;') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
+                                       tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
+                              tags$div(style = 'margin: auto; width: 80%; font-size: 24pt;',
+                                       fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador' , label = strong('Ir a Visualizador') , icon = icon('globe-americas') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 14pt;')),
+                                                column(6 , actionButton(inputId = 'boton_ver_bd' , label = strong('Descripción de Bases de Datos') , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 14pt;')))),
+                              tags$div(style = 'height: 20px; background-color: white;'),
+                              tags$div(style = 'margin: auto; width: 90%; text-align: left; color: #848888;',
+                                       tags$p(strong('Realizado en colaboración por:'))),
+                              tags$div(style = 'margin: auto; width: 90%;',
+                                       fluidRow(column(3, tags$img(src = 'logo_semovi.png' , style = 'height: 45px;')),
+                                                column(2, tags$img(src = 'axa.png' , style = 'height: 50px;')),
+                                                column(2, tags$img(src = 'conacyt.png' , style = 'height: 50px;')),
+                                                column(2, tags$img(src = 'centrogeo.png' , style = 'height: 50px;')),
+                                                column(3, tags$img(src = 'datalab.png' , style = 'height: 30px;')))))
+                     )),
     # ===== TAB BASES DE DATOS =====
     tabItem(tabName = 'bd' , box(width = 12,
                                 tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888;'),
@@ -295,12 +298,27 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                      valueBoxOutput(outputId = 'extra3', width = 2),
                      valueBoxOutput(outputId = 'extra4', width = 2))
             ),
-    # ===== TAB DATOS =====
+    # ===== TAB VISUALIZADOR =====
     tabItem(tabName = 'visualizador',
-            box(width = 12 ,
-                tags$p(strong('Instrucciones') , style = 'color: #848888; font-size: 16pt;'),
-                tags$ol(tags$li('Hola'),
-                        tags$li('A todos'))),
+            tags$div(style = 'text-align: center;',
+                     fluidRow(column(2 , actionButton(inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 12pt;')),
+                              column(2 , actionButton(inputId = 'boton_ver_bd2' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 12pt;')))),
+            tags$div(id = 'berenjena', style = 'display: none; text-align: center;' ,
+                     tags$div(style = 'height: 20px;'),
+                     box(width = 12 ,
+                         fluidRow(column(5 ,
+                                         fluidRow(column(2 , actionButton(inputId = 'l_instrucciones' , label = '' , icon = icon('angle-left'))),
+                                                  column(8 , tags$p(textOutput(outputId = 'pagina_instrucciones' , inline = TRUE) , '/ 8')),
+                                                  column(2 , actionButton(inputId = 'r_instrucciones' , label = '' , icon = icon('angle-right')))),
+                                         tags$p(strong(textOutput(outputId = 'titulo_instrucciones' , inline = TRUE)), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                         tags$p('Hola' , style = 'text-align: left;'),
+                                         tags$div(style = 'display: none;',
+                                                  numericInput(inputId = 'no_instrucciones' , label = NULL , value = 1 , min = 1 , max = 8))),
+                                  column(7 ,
+                                         tags$img(src = 'tmp.png' , style = 'width: 100%;'))
+                                  
+                                  ))),
+            tags$div(style = 'height: 20px;'),
             fluidRow(column(6 , withSpinner(leafletOutput(outputId = 'mapa', height = '756px'),
                                             type = 3 , color = '#00A65A' , size = 2, color.background = '#ecf0f5'),
                             tags$div(style = 'width: 100%; height: 20px; background-color: white; opacity: 0;'),
@@ -738,6 +756,43 @@ server <- function(input, output, session) {
     else if (input$menu_bd == 'C5') '(C5)'
     else if (input$menu_bd == 'AXA') '(AXA)'
     else if (input$menu_bd == 'Repubikla') '(Repubikla)'
+  })
+  
+  # ===== INSTRUCCIONES VISUALIZADOR =====
+  observeEvent(input$boton_ver_bd2 , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
+  
+  observeEvent(input$boton_ver_instrucciones , {
+    if (input$boton_ver_instrucciones %% 2 == 0) {
+      hideElement(id = 'berenjena')
+      updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle'))
+    }
+    else {
+      showElement(id = 'berenjena')
+      updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ocultar Instrucciones' , icon = icon('times-circle'))
+    }
+  })
+  
+  observeEvent(input$l_instrucciones , {
+    if (input$no_instrucciones == 1) updateNumericInput(session , inputId = 'no_instrucciones' , value = 8)
+    else updateNumericInput(session , inputId = 'no_instrucciones' , value = input$no_instrucciones - 1)
+  })
+  
+  observeEvent(input$r_instrucciones , {
+    if (input$no_instrucciones == 8) updateNumericInput(session , inputId = 'no_instrucciones' , value = 1)
+    else updateNumericInput(session , inputId = 'no_instrucciones' , value = input$no_instrucciones + 1)
+  })
+  
+  output$pagina_instrucciones <- renderText(input$no_instrucciones)
+  
+  output$titulo_instrucciones <- renderText({
+    if (input$no_instrucciones == 1) 'Descripción del Visualizador'
+    else if (input$no_instrucciones == 2) 'Selección de Bases de Datos'
+    else if (input$no_instrucciones == 3) 'Filtros de Incidentes Viales'
+    else if (input$no_instrucciones == 4) 'Mapa Interactivo'
+    else if (input$no_instrucciones == 5) 'Gráficas de Incidentes Viales'
+    else if (input$no_instrucciones == 6) 'Gráficas por Totales'
+    else if (input$no_instrucciones == 7) 'Gráficas por Día y Hora'
+    else if (input$no_instrucciones == 8) 'Video Explicativo del Visualizador'
   })
   
   # ===== ACOMODO DE FECHAS LÍMITE =====
@@ -1912,7 +1967,6 @@ server <- function(input, output, session) {
       }
     }
     # ===
-    
     graf_modal$g <- grafica
     hover_h$h <- count_final
     grafica
