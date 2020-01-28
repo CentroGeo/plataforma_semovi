@@ -118,27 +118,48 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
   dashboardHeader(title = 'Incidentes Viales'),
   # ===== SIDEBAR =====
   dashboardSidebar(sidebarMenu(id = 'menu_1',
-                               menuItem(text = 'INtroducción' , selected = TRUE , icon = icon('question-circle') , tabName = 'a'),
-                               menuItem(text = 'Bases de Datos' , selected = TRUE , icon = icon('question-circle') , tabName = 'b'),
-                               menuItem(text = 'Instrucciones' , selected = TRUE , icon = icon('question-circle') , tabName = 'instrucciones'),
-                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador')),
-                   tags$div(tags$p(strong('Realizado en colaboración por:')),
-                            tags$table(style = 'width: 100%;',
-                                       tags$tr(tags$th('') , tags$th('')),
-                                       tags$tr(tags$td(colspan = 2,
-                                                       tags$img(src = 'gobcdmx.png' , style = 'display: block; margin: auto; width: 100%; padding-bottom: 15px'))),
-                                       tags$tr(tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                                                                tags$img(src = 'axa.png' , style = 'height: 45px;'))),
-                                               tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                                                                tags$img(src = 'conacyt.png' , style = 'height: 50px;')))),
-                                       tags$tr(tags$td(tags$div(style = 'text-align: center;',
-                                                                tags$img(src = 'centrogeo.png' , style = 'height: 50px;'))),
-                                               tags$td(tags$div(style = 'text-align: center;',
-                                                                tags$img(src = 'datalab.png' , style = 'width: 80px;'))))),
-                            style = 'position: absolute; bottom: 0; left: 0; padding: 10px 10px; background-color: white; width: 100%; color: #697070;')),
+                               menuItem(text = 'Introducción' , selected = TRUE , icon = icon('door-open') , tabName = 'introduccion'),
+                               menuItem(text = 'Bases de Datos' , icon = icon('layer-group') , tabName = 'bd'),
+                               menuItem(text = 'Instrucciones' , icon = icon('question-circle') , tabName = 'instrucciones'),
+                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador'))
+                   # tags$div(tags$p(strong('Realizado en colaboración por:')),
+                   #          tags$table(style = 'width: 100%;',
+                   #                     tags$tr(tags$th('') , tags$th('')),
+                   #                     tags$tr(tags$td(colspan = 2,
+                   #                                     tags$img(src = 'gobcdmx.png' , style = 'display: block; margin: auto; width: 100%; padding-bottom: 15px'))),
+                   #                     tags$tr(tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
+                   #                                              tags$img(src = 'axa.png' , style = 'height: 45px;'))),
+                   #                             tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
+                   #                                              tags$img(src = 'conacyt.png' , style = 'height: 50px;')))),
+                   #                     tags$tr(tags$td(tags$div(style = 'text-align: center;',
+                   #                                              tags$img(src = 'centrogeo.png' , style = 'height: 50px;'))),
+                   #                             tags$td(tags$div(style = 'text-align: center;',
+                   #                                              tags$img(src = 'datalab.png' , style = 'width: 80px;'))))),
+                   #          style = 'position: absolute; bottom: 0; left: 0; padding: 10px 10px; background-color: white; width: 100%; color: #697070;')
+                   ),
   dashboardBody(useShinyjs() , tags$head(tags$link(rel = 'stylesheet' , type = 'text/css' , href = 'custom.css?version=71')), tabItems(
-    tabItem(tabName = 'a' , 'Holis'),
-    tabItem(tabName = 'b' , box(width = 12,
+    # ===== TAB INTRODUCCIÓN =====
+    tabItem(tabName = 'introduccion' ,
+            tags$div(style = 'width: 100%; height: 90vh; text-align: center; padding-top: 10vh;',
+                     tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
+                     tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
+                     tags$div(style = 'text-align: justify; margin: auto; width: 60%; font-size: 12pt; color: #697070;',
+                       tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
+                       tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)') ,', la ', strong('Procuraduría General de Justicia (PGJ)') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)') ,', la aseguradora ', strong('AXA') ,' y el proyecto colaborativo ', strong('Repubikla') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
+                       tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
+                     tags$div(style = 'margin: auto; width: 60%; font-size: 24pt;',
+                              fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador' , label = strong('Ir a Visualizador') , icon = icon('globe-americas') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 18pt;')),
+                                       column(6 , actionButton(inputId = 'boton_ver_bd' , label = strong('Analizar Bases de Datos') , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 18pt;')))),
+                     tags$div(style = 'margin: auto; width: 70%; text-align: left; color: #848888;',
+                              tags$p(strong('Realizado en colaboración por:'))),
+                     tags$div(style = 'margin: auto; width: 70%;',
+                              fluidRow(column(3, tags$img(src = 'logo_semovi.png' , style = 'height: 45px;')),
+                                       column(2, tags$img(src = 'axa.png' , style = 'height: 50px;')),
+                                       column(2, tags$img(src = 'conacyt.png' , style = 'height: 50px;')),
+                                       column(2, tags$img(src = 'centrogeo.png' , style = 'height: 50px;')),
+                                       column(3, tags$img(src = 'datalab.png' , style = 'height: 30px;')))))),
+    # ===== TAB BASES DE DATOS =====
+    tabItem(tabName = 'bd' , box(width = 12,
                                 tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888;'),
                                 tags$div(style = 'background-color: white; width: 100%; height: 305px;',
                                          navlistPanel(id = 'menu_bd' , selected = 'PGJ', well = FALSE , widths = c(2 , 10) ,
@@ -345,6 +366,8 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
 # ===== SERVIDOR =====
 
 server <- function(input, output, session) {
+  addClass(selector = "body", class = "sidebar-collapse")
+  
   # ===== REACTIVE VARIABLES =====
   bd <- reactiveValues(tmp_pgj = NULL , tmp_ssc = NULL , tmp_c5 = NULL , tmp_axa = NULL , tmp_repubikla = NULL , df_referencia = NULL)
   # =
@@ -359,6 +382,11 @@ server <- function(input, output, session) {
   # =
   filtro_fecha_sp <- reactive(input$filtro_fecha) %>% debounce(1500)
   filtro_bd_sp <- reactive(input$filtro_bd) %>% debounce(1000)
+  
+  # ===== VENTANA INTRODUCCIÓN =====
+  observeEvent(input$boton_ver_visualizador , updateTabItems(session , inputId = 'menu_1' , selected = 'visualizador'))
+  
+  observeEvent(input$boton_ver_bd , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
   
   # ===== BASES DE DATOS REMOTAS - PGJ =====
   observeEvent(input$bd_pgj , {
