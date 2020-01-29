@@ -120,37 +120,47 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
   dashboardSidebar(sidebarMenu(id = 'menu_1',
                                menuItem(text = 'Introducción' , selected = TRUE , icon = icon('door-open') , tabName = 'introduccion'),
                                menuItem(text = 'Bases de Datos' , icon = icon('layer-group') , tabName = 'bd'),
-                               menuItem(text = 'Instrucciones' , icon = icon('question-circle') , tabName = 'instrucciones'),
-                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador'))
-                   # tags$div(tags$p(strong('Realizado en colaboración por:')),
-                   #          tags$table(style = 'width: 100%;',
-                   #                     tags$tr(tags$th('') , tags$th('')),
-                   #                     tags$tr(tags$td(colspan = 2,
-                   #                                     tags$img(src = 'gobcdmx.png' , style = 'display: block; margin: auto; width: 100%; padding-bottom: 15px'))),
-                   #                     tags$tr(tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                   #                                              tags$img(src = 'axa.png' , style = 'height: 45px;'))),
-                   #                             tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                   #                                              tags$img(src = 'conacyt.png' , style = 'height: 50px;')))),
-                   #                     tags$tr(tags$td(tags$div(style = 'text-align: center;',
-                   #                                              tags$img(src = 'centrogeo.png' , style = 'height: 50px;'))),
-                   #                             tags$td(tags$div(style = 'text-align: center;',
-                   #                                              tags$img(src = 'datalab.png' , style = 'width: 80px;'))))),
-                   #          style = 'position: absolute; bottom: 0; left: 0; padding: 10px 10px; background-color: white; width: 100%; color: #697070;')
+                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador'),
+                               menuItem(text = 'Integración de Información' , icon = icon('question-circle') , tabName = 'instrucciones'))
                    ),
   dashboardBody(useShinyjs() , tags$head(tags$link(rel = 'stylesheet' , type = 'text/css' , href = 'custom.css?version=71')), tabItems(
     # ===== TAB INTRODUCCIÓN =====
     tabItem(tabName = 'introduccion' ,
-            tags$div(style = 'width: 100%; height: 90vh; text-align: center; padding-top: 10vh;',
-                     tags$div(style = 'background-color: white; margin: auto; width: 70%; padding: 30px; border-radius: 10px;',
+            tags$div(style = 'width: 100%; height: 90vh; text-align: center; padding-top: 1vh;',
+                     tags$div(style = 'background-color: white; margin: auto; width: 80%; padding: 30px; border-radius: 10px;',
                               tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
                               tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
-                              tags$div(style = 'text-align: justify; margin: auto; width: 80%; font-size: 12pt; color: #697070;',
-                                       tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
-                                       tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)' , style = 'color: #043A5F;') ,', la ', strong('Procuraduría General de Justicia (PGJ)' , style = 'color: #952800;') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)' , style = 'color: #956F00;') ,', la aseguradora ', strong('AXA' , style = 'color: #5E0061;') ,' y el proyecto colaborativo ', strong('Repubikla' , style = 'color: #3F8500;') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
-                                       tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
-                              tags$div(style = 'margin: auto; width: 80%; font-size: 24pt;',
-                                       fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador' , label = strong('Ir a Visualizador') , icon = icon('globe-americas') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 14pt;')),
-                                                column(6 , actionButton(inputId = 'boton_ver_bd' , label = strong('Descripción de Bases de Datos') , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 14pt;')))),
+                              # tags$div(style = 'text-align: justify; margin: auto; width: 80%; font-size: 12pt; color: #697070;',
+                              #          tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
+                              #          tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)' , style = 'color: #043A5F;') ,', la ', strong('Procuraduría General de Justicia (PGJ)' , style = 'color: #952800;') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)' , style = 'color: #956F00;') ,', la aseguradora ', strong('AXA' , style = 'color: #5E0061;') ,' y el proyecto colaborativo ', strong('Repubikla' , style = 'color: #3F8500;') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
+                              #          tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
+                              tags$div(style = 'text-align: justify; margin: auto; width: 90%; font-size: 12pt; color: #697070;',
+                                       fluidRow(column(9,
+                                                       tags$p(strong('Panorama General'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('Uno de los compromisos de la Secretaría de Movilidad de la Ciudad de México (SEMOVI) es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia. Por lo que a partir de la liberación de distintas fuentes de datos oficiales, la SEMOVI en colaboración con el Laboratorio de Datos Geoespaciales (DataLab) del Centro de Ciencias de Información Geoespacial (CentroGeo) y la Aseguradora AXA, se dieron a la tarea de desarrollar herramientas de visualización y manejo de información, para entender la dinámica espacial que siguen los hechos de tránsito.')),
+                                                column(3,
+                                                       tags$img(src = 'img/intro_a.jpg' , style = 'width: 100%;'))),
+                                       tags$div(style = 'height: 20px; background-color: white;'),
+                                       fluidRow(column(3,
+                                                       tags$img(src = 'img/intro_b.jpg' , style = 'width: 100%;')),
+                                                column(9,
+                                                       tags$p(strong('Herramienta de Geovisualización'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('Esta herramienta permite a los usuarios explorar y analizar de forma interactiva, los datos disponibles de la Secretaría de Seguridad Ciudadana (SSC), la Procuraduría General de Justicia (PGJ), el Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5), la aseguradora AXA y el proyecto colaborativo Repubikla.'),
+                                                       tags$div(style = 'font-size: 24pt; text-align: right;',
+                                                                actionButton(inputId = 'boton_ver_visualizador' , label = 'Ir a Visualizador' , icon = icon('globe-americas') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;')
+                                                                # fluidRow(column(6 , ),
+                                                                #          column(6 , actionButton(inputId = 'boton_ver_bd' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;')))
+                                                                )
+                                                       )),
+                                       tags$div(style = 'height: 20px; background-color: white;'),
+                                       fluidRow(column(9,
+                                                       tags$p(strong('Herramienta de Integración de Información'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('En la Ciudad de México los datos de incidentes viales  son recopilados por diferentes instituciones gubernamentales basándose en los objetivos particulares de cada una de ellas, por lo que no existe una única fuente de datos. Para la SEMOVI es importante poder contar con un panorama general, que integre los datos de las diferentes instituciones. Por lo que se desarrolló una aplicación que permite explorar los datos para complementar e integrar registros en una sola fuente.'),
+                                                       tags$div(style = 'font-size: 24pt; text-align: left;',
+                                                                actionButton(inputId = 'boton_ver_integracion' , label = 'Información sobre Herramienta de Integración' , icon = icon('info-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;'))),
+                                                column(3,
+                                                       tags$img(src = 'img/intro_c.jpg' , style = 'width: 100%;')))
+                                       ),
                               tags$div(style = 'height: 20px; background-color: white;'),
                               tags$div(style = 'margin: auto; width: 90%; text-align: left; color: #848888;',
                                        tags$p(strong('Realizado en colaboración por:'))),
@@ -310,8 +320,9 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                                          fluidRow(column(2 , actionButton(inputId = 'l_instrucciones' , label = '' , icon = icon('angle-left'))),
                                                   column(8 , tags$p(textOutput(outputId = 'pagina_instrucciones' , inline = TRUE) , '/ 8')),
                                                   column(2 , actionButton(inputId = 'r_instrucciones' , label = '' , icon = icon('angle-right')))),
+                                         tags$div(style = 'height: 20px;'),
                                          tags$p(strong(textOutput(outputId = 'titulo_instrucciones' , inline = TRUE)), style = 'font-size: 18pt; color: #848888; text-align: left;'),
-                                         tags$p('Hola' , style = 'text-align: left;'),
+                                         tags$p(htmlOutput(outputId = 'desc_instrucciones' , inline = TRUE) , style = 'text-align: justify; font-size: 12pt; color: #697070;'),
                                          tags$div(style = 'display: none;',
                                                   numericInput(inputId = 'no_instrucciones' , label = NULL , value = 1 , min = 1 , max = 8))),
                                   column(7 ,
@@ -763,11 +774,11 @@ server <- function(input, output, session) {
   
   observeEvent(input$boton_ver_instrucciones , {
     if (input$boton_ver_instrucciones %% 2 == 0) {
-      hideElement(id = 'berenjena')
+      hideElement(id = 'berenjena' , anim = TRUE)
       updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle'))
     }
     else {
-      showElement(id = 'berenjena')
+      showElement(id = 'berenjena' , anim = TRUE)
       updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ocultar Instrucciones' , icon = icon('times-circle'))
     }
   })
@@ -793,6 +804,71 @@ server <- function(input, output, session) {
     else if (input$no_instrucciones == 6) 'Gráficas por Totales'
     else if (input$no_instrucciones == 7) 'Gráficas por Día y Hora'
     else if (input$no_instrucciones == 8) 'Video Explicativo del Visualizador'
+  })
+  
+  output$desc_instrucciones <- renderUI({
+    if (input$no_instrucciones == 1) HTML(paste0('Esta aplicación es un <b>Visualizador de Incidentes Viales</b> registrados por distintas instituciones públicas y privadas a través de diferentes Bases de Datos.',
+                                                'La herramienta se conforma de tres secciones principales que permiten facilitar la exploración de estas bases:</br>',
+                                                '<ul><li><b>Mapa Interactivo</b> – Permite identificar la posición geográfica de cada uno de los incidentes, así como acceder a información detallada de cada uno.</li>',
+                                                '<li><b>Filtro de Incidentes</b> – Ayuda a filtrar las Bases de Datos en función de un lugar, tiempo o tipo de incidente en específico.</li>',
+                                                '<li><b>Gráficas de Incidentes Viales</b> – Permiten observar tendencias y estadísticos generales sobre los incidentes observados en el mapa.</li></ul>',
+                                                'Como tal, todas las bases pueden ser analizadas a detalle en función de las necesidades del usuario.'))
+    else if (input$no_instrucciones == 2) HTML(paste0('Para iniciar, es necesario seleccionar alguna de las Bases de Datos disponibles, lo cual permitirá visualizar los incidentes que contenga en el Mapa Interactivo. Cada Base de Datos se encuentra asociada a un color para facilitar su identificación:</br></br>',
+                                                      '<table style = "margin: auto; width: 60%;">
+                                                        <tr>
+                                                          <td style = "background-color: #952800; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>PGJ</b></td>
+                                                          <td style = "background-color: #043A5F; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>SSC</b></td>
+                                                          <td style = "background-color: #956F00; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>C5</b></td>
+                                                          <td style = "background-color: #5E0061; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>AXA</b></td>
+                                                          <td style = "background-color: #3F8500; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>Repubikla</b></td>
+                                                        </tr>
+                                                      </table>',
+                                                      '</br>Es posible seleccionar más de una Base de Datos a la vez, permitiéndo observarlas todas al mismo tiempo si el usuario así lo desea.'))
+    else if (input$no_instrucciones == 3) HTML(paste0('Es posible filtrar los incidentes observados en el mapa de tres maneras distintas:',
+                                                      '<ul>
+                                                        <li><b>Fecha</b> – Utilizando el deslizador ubicado debajo del mapa, el usuario puede seleccionar un periodo de tiempo específico.</li>
+                                                        <li><b>Lugar</b> – El menú bajo el nombre de "Área de Análisis" permite observar los incidentes ocurridos en toda la extensión de la CDMX, o únicamente en alguna de sus 16 alcaldías.</li>
+                                                        <li><b>Tipo de Incidente</b> – Los incidentes viales se han dividido en tres tipos:
+                                                          <ul>
+                                                            <li><i>Decesos</i> – Todos aquellos en los que se registró por lo menos algún fallecido.</li>
+                                                            <li><i>Lesionados</i> – Aquellos en los que la respectiva institución registró a la víctima del incidente lesionada de alguna forma.</li>
+                                                            <li><i>Accidentes</i> – Todos los incidentes donde no se registró ni un fallecido ni un lesionado.</li>
+                                                          </ul></li>
+                                                      </ul>',
+                                                      'El usuario puede visualizar sólo un tipo de Incidente Vial a la vez, o todos ellos al mismo tiempo. Asimismo, cada tipo de incidente se encuentra asociado a un ícono en particular:</br></br>',
+                                                      '<table style = "margin: auto; width: 60%;">
+                                                        <tr>
+                                                          <td><div class="fa fa-skull" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Decesos</b></td>
+                                                          <td><div class="fa fa-medkit" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Lesionados</b></td>
+                                                          <td><div class="fa fa-car-crash" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Accidentes</b></td>
+                                                        </tr>
+                                                      </table>'))
+    else if (input$no_instrucciones == 4) HTML(paste0('En el mapa aparecerán todos los Incidentes Viales registrados por las instituciones seleccionadas que cumplan con los filtros establecidos. Los marcadores del mapa señalarán el color y el símbolo asociado a cada incidente, de acuerdo a la simbología presente en la esquina inferior derecha del mapa. Sus caracerísticas más importantes son:</br>',
+                                                      '<ul>
+                                                        <li>Los círculos con números, llamados <b>Clústers</b> indicarán el número de incidentes ocurridos en una zona en particular y, al dar clic en ellos, el mapa se acercará a ésta y mostrará los incidentes correspondientes.</li>
+                                                        <li>Al hacer clic en alguno de los incidentes, aparecerá información detallada sobre éste, como la fecha y hora del mismo, lo cual permitirá conocer más información sobre el mismo.</li>
+                                                        <li>El usuario puede moverse por el mapa a lo largo de toda la Ciudad, así como alejarse o acercarse tanto como se necesite.</li>
+                                                      </ul>',
+                                                      'De esta forma, tanto la Secretaría como los usuarios son capaces de entender en un primer nivel la dinámica espacial de los hechos de tránsito.'))
+    else if (input$no_instrucciones == 5) HTML(paste0('Los hechos de tránsito visualizados en el mapa también generarán gráficas que permiten entender el panorama general de los mismos a través de estadísticos básicos. De éstas, cabe destacar:</br>',
+                                                      '<ul>
+                                                        <li>En general, el usuario verá en el Eje Horizontal los meses correspondientes al periodo de tiempo aplicado en los filtros anteriores, y en el Eje Vertical un conteo del número de incidentes correspondientes.</li>
+                                                        <li>Es posible dar clic a la gráfica para conocer el número específico de incidentes viales en algún punto en particular.</li>
+                                                        <li>El usuario es capaz de <b>Categorizar</b> los Incidentes Viales a través del menú "Datos a Graficar", en función de las características de cada Base de Datos:</li>
+                                                          <ul>
+                                                            <li>Seleccionar "Gráficas Combinadas" genera una gráfica donde se realiza un conteo de todas las Bases de Datos seleccionadas</li>
+                                                            <li>Cualquier otra opción permitirá analizar a detalle alguna base en particular y categorizar según sus variables particulares. Por ejemplo, "PGJ" permite categorizar según el delito registrado en la Carpeta de Investigación.</li>
+                                                          </ul>
+                                                      </ul>'))
+    else if (input$no_instrucciones == 6) HTML(paste0())
   })
   
   # ===== ACOMODO DE FECHAS LÍMITE =====
