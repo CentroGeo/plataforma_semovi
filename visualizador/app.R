@@ -130,10 +130,6 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                      tags$div(style = 'background-color: white; margin: auto; width: 80%; padding: 30px; border-radius: 10px;',
                               tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
                               tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
-                              # tags$div(style = 'text-align: justify; margin: auto; width: 80%; font-size: 12pt; color: #697070;',
-                              #          tags$p('Uno de los compromisos de la ', strong('Secretaría de Movilidad de la Ciudad de México (SEMOVI)') ,' es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia.'),
-                              #          tags$p('A través de esta herramienta de visualización es posible explorar los datos generados por diferentes instancias gubernamentales relacionados con accidentes viales. Las bases de datos disponibles para este análisis son: ', strong('Secretaría de Seguridad Ciudadana (SSC)' , style = 'color: #043A5F;') ,', la ', strong('Procuraduría General de Justicia (PGJ)' , style = 'color: #952800;') ,', el ', strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)' , style = 'color: #956F00;') ,', la aseguradora ', strong('AXA' , style = 'color: #5E0061;') ,' y el proyecto colaborativo ', strong('Repubikla' , style = 'color: #3F8500;') ,'. Es importante mencionar que cada una de las bases que se utilizaron fueron generadas con base en una metodología y objetivos distintos, basadas en las necesidades de las instituciones que las generan.'),
-                              #          tags$p('Para cumplir con el objetivo de la SEMOVI, es importante contar con un panorama general de todos los incidentes viales generados a través de las diferentes fuentes disponibles; es por ello que se creó ')),
                               tags$div(style = 'text-align: justify; margin: auto; width: 90%; font-size: 12pt; color: #697070;',
                                        fluidRow(column(9,
                                                        tags$p(strong('Panorama General'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
@@ -148,8 +144,6 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                                                        tags$p('Esta herramienta permite a los usuarios explorar y analizar de forma interactiva, los datos disponibles de la Secretaría de Seguridad Ciudadana (SSC), la Procuraduría General de Justicia (PGJ), el Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5), la aseguradora AXA y el proyecto colaborativo Repubikla.'),
                                                        tags$div(style = 'font-size: 24pt; text-align: right;',
                                                                 actionButton(inputId = 'boton_ver_visualizador' , label = 'Ir a Visualizador' , icon = icon('globe-americas') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;')
-                                                                # fluidRow(column(6 , ),
-                                                                #          column(6 , actionButton(inputId = 'boton_ver_bd' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;')))
                                                                 )
                                                        )),
                                        tags$div(style = 'height: 20px; background-color: white;'),
@@ -172,108 +166,221 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                                                 column(3, tags$img(src = 'datalab.png' , style = 'height: 30px;')))))
                      )),
     # ===== TAB BASES DE DATOS =====
-    tabItem(tabName = 'bd' , box(width = 12,
-                                tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888;'),
-                                tags$div(style = 'background-color: white; width: 100%; height: 305px;',
-                                         navlistPanel(id = 'menu_bd' , selected = 'PGJ', well = FALSE , widths = c(2 , 10) ,
-                                                      tabPanel(title = 'PGJ',
-                                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                                        tags$p(tags$strong('Procuraduría General de Justicia'),
-                                                                               tags$img(src = 'pgj.png',
-                                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                                               style = 'font-size: 18pt;'),
-                                                                        tags$p('Carpetas de investigación de delitos a nivel de calle de la Procuraduría General de Justicia de la Ciudad de México, actualizados mensualmente con registros desde enero de 2016.',
-                                                                               style = 'text-align: justify;'),
-                                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                                        selectInput(inputId = 'campos_pgj' , label = NULL , 
-                                                                                                    choices = c('Delito' , 'Fiscalía' , 'Agencia' , 'U. Investigación' , 'Fecha de Hechos' , 'Fecha de Inicio'))),
-                                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_pgj'),
-                                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/carpetas-de-investigacion-pgj-de-la-ciudad-de-mexico/'))),
-                                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Enero 2016 a Septiembre 2019*'))),
-                                                                        fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
-                                                                                 column(8 , radioButtons(inputId = 'bd_pgj' , label = NULL, inline = TRUE,
-                                                                                                         choiceNames = c('Local' , 'Remota'),
-                                                                                                         choiceValues = c('A' , 'B')))),
-                                                                        tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
-                                                                                                                                     style = 'font-size: 9pt;'))
-                                                                        
-                                                               )),
-                                                      tabPanel(title = 'SSC',
-                                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                                        tags$p(tags$strong('Secretaría de Seguridad Ciudadana'),
-                                                                               tags$img(src = 'ssc.png',
-                                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                                               style = 'font-size: 18pt;'),
-                                                                        tags$p('Reportes de incidentes viales realizados por policías respondientes. Sólo se cuentan con datos de Enero 2018 a Abril 2019, dado que son la única versión pública disponible.',
-                                                                               style = 'text-align: justify;'),
-                                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                                        selectInput(inputId = 'campos_ssc' , label = NULL , 
-                                                                                                    choices = c('Tipo de Evento' , 'Intersección' , 'Cuadrante' , 'Vehículo' , 'Ruta T. Público' , 'Condición' , 'Total Occisos' , 'Identidad' , 'U. M. de Apoyo' , 'Observaciones'))),
-                                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_ssc'),
-                                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify;  word-wrap: break-word;'))),
-                                                                        fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Secretaría de Seguridad Ciudadana de la CDMX' , href = 'https://www.ssc.cdmx.gob.mx/'))),
-                                                                                 column(5 , tags$p(strong('Temporalidad'), ' – Enero 2018 a Abril 2019')))
-                                                                        
-                                                               )),
-                                                      tabPanel(title = 'C5',
-                                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                                        tags$p(tags$strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México'),
-                                                                               tags$img(src = 'c5.png',
-                                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                                               style = 'font-size: 16pt;'),
-                                                                        tags$p('Incidentes viales reportados por el C5 desde Ene/2014, actualizado mensualmente. Sólo se consideran aquellos clasificados como reales por los códigos internos del centro.',
-                                                                               style = 'text-align: justify;'),
-                                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                                        selectInput(inputId = 'campos_c5' , label = NULL , 
-                                                                                                    choices = c('Folio' , 'Fecha Creación' , 'Incidente C4' , 'Código de Cierre' , 'C. con F. Alarma' , 'Tipo de Entrada'))),
-                                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_c5'),
-                                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/incidentes-viales-c5'))),
-                                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Enero 2014 a Septiembre 2019*'))),
-                                                                        fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
-                                                                                 column(8 , radioButtons(inputId = 'bd_c5' , label = NULL, inline = TRUE,
-                                                                                                         choiceNames = c('Local' , 'Remota'),
-                                                                                                         choiceValues = c('A' , 'B')))),
-                                                                        tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
-                                                                                                                                     style = 'font-size: 9pt;'))
-                                                                        
-                                                               )),
-                                                      tabPanel(title = 'AXA',
-                                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                                        tags$p(tags$strong('AXA Seguros'),
-                                                                               tags$img(src = 'axa.png',
-                                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                                               style = 'font-size: 18pt;'),
-                                                                        tags$p('Datos de percances viales pertenecientes a AXA Seguros, pero aperturados y entregados a la comunidad mediante el Instituto Internacional de Ciencia de Datos.',
-                                                                               style = 'text-align: justify;'),
-                                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                                        selectInput(inputId = 'campos_axa' , label = NULL , 
-                                                                                                    choices = c('Siniestro' , 'Causa Siniestro' , 'Vehículo' , 'Nivel de Daño' , 'Punto Impacto' , 'Año de Reporte' , 'T. Lesionados' , 'Rol Lesionado' , 'Nivel de Lesión' , 'Fallecido' , 'Hospitalizado' , 'Var. Binarias'))),
-                                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_axa'),
-                                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                                        fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Instituto Internacional de Ciencia de Datos' , href = 'http://i2ds.org/datos-abiertos-percances-viales/'))),
-                                                                                 column(5 , tags$p(strong('Temporalidad'), ' – Enero 2015 a Julio 2019')))
-                                                                        
-                                                               )),
-                                                      tabPanel(title = 'Repubikla',
-                                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                                        tags$p(tags$strong('Repubikla'),
-                                                                               tags$img(src = 'repubikla2.png',
-                                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                                               style = 'font-size: 18pt;'),
-                                                                        tags$p('Plataforma de mapeo alimentada por ciudadanos que, a través del crowdsourcing, busca generar y centralizar datos sobre movilidad no motorizada.',
-                                                                               style = 'text-align: justify;'),
-                                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                                        selectInput(inputId = 'campos_repubikla' , label = NULL , 
-                                                                                                    choices = c('Comentario' , 'Modo' , 'Fuente' , 'Responsable' , 'Gravedad' , 'Seguimiento'))),
-                                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_repubikla'),
-                                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Portal Oficial de Repubikla' , href = 'https://repubikla.herokuapp.com/'))),
-                                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Diciembre 2017 a Marzo 2019')))
-                                                                        
-                                                               )))
-                                ))),
+    tabItem(tabName = 'bd' ,
+            fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador3' , label = 'Regresar a Visualizador' , icon = icon('globe-americas') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'))),
+            tags$div(style = 'height: 20px;'),
+            box(width = 12,
+                tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                         tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                         tags$p('A continuación, encontrará información detallada sobre las Bases de Datos utilizadas en esta aplicación, a modo de conocer más a fondo su función original en el organismo generador y su utilidad para los objetivos de la SEMOVI.')),
+                tabsetPanel(tabPanel(title = 'PGJ',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$span(strong('Fiscalía General de Justicia (FGJ)')),
+                                                              tags$img(src = 'fgj.png' , style = 'height: 85px; vertical-align: bottom; right: 0;')),
+                                                     # tags$div(style = 'font-size: 18pt; color: #848888;',
+                                                     #          tags$img(src = 'fgj.png' , style = 'height: 85px; vertical-align: bottom; padding-right: 25px;'),
+                                                     #          tags$span(strong('Fiscalía General de Justicia (FGJ)'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('A través del Ministerio Público, tiene las atribuciones de investigar los delitos de orden común, y perseguir a los imputados. Promoviendo la pronta, expedita y debida procuración de Justicia. '),
+                                                                      tags$li('Esta fuente recaba una gran parte de información que se complementa en el lugar de investigación como cada uno de los campos pertenecientes a su base de datos.'),
+                                                                      tags$li('Esta fuente se considera fundamental debido a que un accidente vial puede resultar en la comisión de delitos como daños, lesiones o incluso homicidio (no intencional). Por lo cual le corresponderá a la FGJ tomar la investigación y con ello la recopilación de información.'),
+                                                                      tags$li('Para lo anterior, el Ministerio Público quien coordina la investigación, recaba información de las entrevistas a víctimas o imputados, las policías o bien de los peritos.')),
+                                                              tags$p(style = 'font-size: 10pt;',
+                                                                     strong('Referencia') , ' – ' , tags$a('Ley Orgánica de la Procuraduría General de Justicia del Distrito Federal' , href = 'https://www.fgjcdmx.gob.mx/storage/app/uploads/public/5cb/deb/007/5cbdeb007f41e545358777.pdf'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/carpetas-de-investigacion-pgj-de-la-ciudad-de-mexico/')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'pgj_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'pgj_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'pgj_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Base de Datos Remota'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$p('"Local" trabaja con una versión almacenada en la aplicación; "Remota" utiliza la Base de Datos más reciente disponible en línea.'),
+                                                              radioButtons(inputId = 'bd_pgj' , label = NULL, inline = TRUE,
+                                                                           choiceNames = c('Local' , 'Remota'),
+                                                                           choiceValues = c('A' , 'B')))
+                                                     ),
+                                              column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     # ===== Tabla PGJ =====
+                                                     tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                                tags$tr(class = 'diccionario' ,
+                                                                        tags$th('Nombre de la Variable', class = 'diccionario') , tags$th('Descripción', class = 'diccionario') , tags$th('Tipo o Categorías', class = 'diccionario')),
+                                                                tags$tr(tags$td('ao_hechos'),
+                                                                        tags$td('Año en que ocurrió el hecho'),
+                                                                        tags$td('Entero')),
+                                                                tags$tr(tags$td('mes_hechos'),
+                                                                        tags$td('Mes en el que ocurrió el hecho'),
+                                                                        tags$td('Texto')),
+                                                                tags$tr(tags$td('fecha_hechos'),
+                                                                        tags$td('Día, mes, año y hora en el que ocurrió el hecho'),
+                                                                        tags$td('Texto, en formato “aaaa-mm-dd hh:mm” (24 hrs)')),
+                                                                tags$tr(tags$td('ao_inicio'),
+                                                                        tags$td('Año en el cual se abrió la carpeta de investigación'),
+                                                                        tags$td('Entero')),
+                                                                tags$tr(tags$td('mes_inicio'),
+                                                                        tags$td('Mes en el cual se abrió la carpeta de investigación'),
+                                                                        tags$td('Texto')),
+                                                                tags$tr(tags$td('fecha_inicio'),
+                                                                        tags$td('Día, mes, año y hora en el cual se abrió la carpeta de investigación'),
+                                                                        tags$td('Texto, en formato “aaaa-mm-dd hh:mm” (24 hrs)')),
+                                                                tags$tr(tags$td('delito'),
+                                                                        tags$td('Tipo penal con base en Código Penal de la CDMX'),
+                                                                        tags$td('8 Tipos Penales:',
+                                                                                tags$ul(tags$li('Daño en Propiedad Ajena Culposa por Tránsito Vehicular a Automóvil'),
+                                                                                        tags$li('Daño en Propiedad Ajena Culposa por Tránsito Vehicular a Bienes Inmuebles'),
+                                                                                        tags$li('Lesiones Culposas por Tránsito Vehicular'),
+                                                                                        tags$li('Homicidio Culposo por Tránsito Vehicular'),
+                                                                                        tags$li('Homicidio Culposo por Tránsito Vehicular (Colisión)'),
+                                                                                        tags$li('Homicidio Culposo por Tránsito Vehicular (Atropellado)'),
+                                                                                        tags$li('Homicidio Culposo por Tránsito Vehicular (Caída)')))),
+                                                                tags$tr(tags$td('fiscalia'),
+                                                                        tags$td('Entidad pública encargada de la investigación'),
+                                                                        tags$td('24 fiscalías')),
+                                                                tags$tr(tags$td('agencia'),
+                                                                        tags$td('Clave de la agencia encargada de la investigación'),
+                                                                        tags$td('89 agencias')),
+                                                                tags$tr(tags$td('unidad_investigacion'),
+                                                                        tags$td('Clave con unidad de investigación detallando si existieron detenidos'),
+                                                                        tags$td('20 claves')),
+                                                                tags$tr(tags$td('categoria_delito'),
+                                                                        tags$td('Categoría del delito con base en Código Penal de la CDMX'),
+                                                                        tags$td('1 categoría (Delito de Bajo Impacto)')),
+                                                                tags$tr(tags$td('calle_hechos'),
+                                                                        tags$td('Nombre de la calle del hecho'),
+                                                                        tags$td('12,336 calles')),
+                                                                tags$tr(tags$td('calle_hechos2'),
+                                                                        tags$td('Segunda referencia al lugar donde ocurrieron los hechos'),
+                                                                        tags$td('8,581 calles')),
+                                                                tags$tr(tags$td('colonia_hechos'),
+                                                                        tags$td('Nombre de la colonia del hecho'),
+                                                                        tags$td('1,370 colonias')),
+                                                                tags$tr(tags$td('alcaldia_hechos'),
+                                                                        tags$td('Nombre de la alcaldia del hecho'),
+                                                                        tags$td('16 alcaldías')),
+                                                                tags$tr(tags$td('longitud'),
+                                                                        tags$td('Coordenada X'),
+                                                                        tags$td('Numérico')),
+                                                                tags$tr(tags$td('latitud'),
+                                                                        tags$td('Coordenada Y'),
+                                                                        tags$td('Numérico'))
+                                                                )
+                                                     # =====
+                                                     ))),
+                            tabPanel(title = 'SSC'),
+                            tabPanel(title = 'C5'),
+                            tabPanel(title = 'AXA'),
+                            tabPanel(title = 'Repubikla'))
+                )
+            # box(width = 12,
+            #                     tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888;'),
+            #                     tags$div(style = 'background-color: white; width: 100%; height: 305px;',
+            #                              navlistPanel(id = 'menu_bd' , selected = 'PGJ', well = FALSE , widths = c(2 , 10) ,
+            #                                           tabPanel(title = 'PGJ',
+            #                                                    tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
+            #                                                             tags$p(tags$strong('Procuraduría General de Justicia'),
+            #                                                                    tags$img(src = 'pgj.png',
+            #                                                                             style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
+            #                                                                    style = 'font-size: 18pt;'),
+            #                                                             tags$p('Carpetas de investigación de delitos a nivel de calle de la Procuraduría General de Justicia de la Ciudad de México, actualizados mensualmente con registros desde enero de 2016.',
+            #                                                                    style = 'text-align: justify;'),
+            #                                                             fluidRow(column(3 , tags$strong('Campos Importantes'),
+            #                                                                             selectInput(inputId = 'campos_pgj' , label = NULL , 
+            #                                                                                         choices = c('Delito' , 'Fiscalía' , 'Agencia' , 'U. Investigación' , 'Fecha de Hechos' , 'Fecha de Inicio'))),
+            #                                                                      column(9 , tags$div(textOutput(outputId = 'texto_campos_pgj'),
+            #                                                                                          style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
+            #                                                             fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/carpetas-de-investigacion-pgj-de-la-ciudad-de-mexico/'))),
+            #                                                                      column(6 , tags$p(strong('Temporalidad'), ' – Enero 2016 a Septiembre 2019*'))),
+            #                                                             fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
+            #                                                                      column(8 , radioButtons(inputId = 'bd_pgj' , label = NULL, inline = TRUE,
+            #                                                                                              choiceNames = c('Local' , 'Remota'),
+            #                                                                                              choiceValues = c('A' , 'B')))),
+            #                                                             tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
+            #                                                                                                                          style = 'font-size: 9pt;'))
+            #                                                             
+            #                                                    )),
+            #                                           tabPanel(title = 'SSC',
+            #                                                    tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
+            #                                                             tags$p(tags$strong('Secretaría de Seguridad Ciudadana'),
+            #                                                                    tags$img(src = 'ssc.png',
+            #                                                                             style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
+            #                                                                    style = 'font-size: 18pt;'),
+            #                                                             tags$p('Reportes de incidentes viales realizados por policías respondientes. Sólo se cuentan con datos de Enero 2018 a Abril 2019, dado que son la única versión pública disponible.',
+            #                                                                    style = 'text-align: justify;'),
+            #                                                             fluidRow(column(3 , tags$strong('Campos Importantes'),
+            #                                                                             selectInput(inputId = 'campos_ssc' , label = NULL , 
+            #                                                                                         choices = c('Tipo de Evento' , 'Intersección' , 'Cuadrante' , 'Vehículo' , 'Ruta T. Público' , 'Condición' , 'Total Occisos' , 'Identidad' , 'U. M. de Apoyo' , 'Observaciones'))),
+            #                                                                      column(9 , tags$div(textOutput(outputId = 'texto_campos_ssc'),
+            #                                                                                          style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify;  word-wrap: break-word;'))),
+            #                                                             fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Secretaría de Seguridad Ciudadana de la CDMX' , href = 'https://www.ssc.cdmx.gob.mx/'))),
+            #                                                                      column(5 , tags$p(strong('Temporalidad'), ' – Enero 2018 a Abril 2019')))
+            #                                                             
+            #                                                    )),
+            #                                           tabPanel(title = 'C5',
+            #                                                    tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
+            #                                                             tags$p(tags$strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México'),
+            #                                                                    tags$img(src = 'c5.png',
+            #                                                                             style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
+            #                                                                    style = 'font-size: 16pt;'),
+            #                                                             tags$p('Incidentes viales reportados por el C5 desde Ene/2014, actualizado mensualmente. Sólo se consideran aquellos clasificados como reales por los códigos internos del centro.',
+            #                                                                    style = 'text-align: justify;'),
+            #                                                             fluidRow(column(3 , tags$strong('Campos Importantes'),
+            #                                                                             selectInput(inputId = 'campos_c5' , label = NULL , 
+            #                                                                                         choices = c('Folio' , 'Fecha Creación' , 'Incidente C4' , 'Código de Cierre' , 'C. con F. Alarma' , 'Tipo de Entrada'))),
+            #                                                                      column(9 , tags$div(textOutput(outputId = 'texto_campos_c5'),
+            #                                                                                          style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
+            #                                                             fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/incidentes-viales-c5'))),
+            #                                                                      column(6 , tags$p(strong('Temporalidad'), ' – Enero 2014 a Septiembre 2019*'))),
+            #                                                             fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
+            #                                                                      column(8 , radioButtons(inputId = 'bd_c5' , label = NULL, inline = TRUE,
+            #                                                                                              choiceNames = c('Local' , 'Remota'),
+            #                                                                                              choiceValues = c('A' , 'B')))),
+            #                                                             tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
+            #                                                                                                                          style = 'font-size: 9pt;'))
+            #                                                             
+            #                                                    )),
+            #                                           tabPanel(title = 'AXA',
+            #                                                    tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
+            #                                                             tags$p(tags$strong('AXA Seguros'),
+            #                                                                    tags$img(src = 'axa.png',
+            #                                                                             style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
+            #                                                                    style = 'font-size: 18pt;'),
+            #                                                             tags$p('Datos de percances viales pertenecientes a AXA Seguros, pero aperturados y entregados a la comunidad mediante el Instituto Internacional de Ciencia de Datos.',
+            #                                                                    style = 'text-align: justify;'),
+            #                                                             fluidRow(column(3 , tags$strong('Campos Importantes'),
+            #                                                                             selectInput(inputId = 'campos_axa' , label = NULL , 
+            #                                                                                         choices = c('Siniestro' , 'Causa Siniestro' , 'Vehículo' , 'Nivel de Daño' , 'Punto Impacto' , 'Año de Reporte' , 'T. Lesionados' , 'Rol Lesionado' , 'Nivel de Lesión' , 'Fallecido' , 'Hospitalizado' , 'Var. Binarias'))),
+            #                                                                      column(9 , tags$div(textOutput(outputId = 'texto_campos_axa'),
+            #                                                                                          style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
+            #                                                             fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Instituto Internacional de Ciencia de Datos' , href = 'http://i2ds.org/datos-abiertos-percances-viales/'))),
+            #                                                                      column(5 , tags$p(strong('Temporalidad'), ' – Enero 2015 a Julio 2019')))
+            #                                                             
+            #                                                    )),
+            #                                           tabPanel(title = 'Repubikla',
+            #                                                    tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
+            #                                                             tags$p(tags$strong('Repubikla'),
+            #                                                                    tags$img(src = 'repubikla2.png',
+            #                                                                             style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
+            #                                                                    style = 'font-size: 18pt;'),
+            #                                                             tags$p('Plataforma de mapeo alimentada por ciudadanos que, a través del crowdsourcing, busca generar y centralizar datos sobre movilidad no motorizada.',
+            #                                                                    style = 'text-align: justify;'),
+            #                                                             fluidRow(column(3 , tags$strong('Campos Importantes'),
+            #                                                                             selectInput(inputId = 'campos_repubikla' , label = NULL , 
+            #                                                                                         choices = c('Comentario' , 'Modo' , 'Fuente' , 'Responsable' , 'Gravedad' , 'Seguimiento'))),
+            #                                                                      column(9 , tags$div(textOutput(outputId = 'texto_campos_repubikla'),
+            #                                                                                          style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
+            #                                                             fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Portal Oficial de Repubikla' , href = 'https://repubikla.herokuapp.com/'))),
+            #                                                                      column(6 , tags$p(strong('Temporalidad'), ' – Diciembre 2017 a Marzo 2019')))
+            #                                                             
+            #                                                    )))
+            #                     ))
+            ),
     # ===== TAB INSTRUCCIONES =====
     tabItem(tabName = 'instrucciones',
             # ===== CUADRO INSTRUCCIONES =====
@@ -310,9 +417,11 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
             ),
     # ===== TAB VISUALIZADOR =====
     tabItem(tabName = 'visualizador',
-            tags$div(style = 'text-align: center;',
-                     fluidRow(column(2 , actionButton(inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle') , style = 'background-color: #0073B6; color: white; border-color: ; font-size: 12pt;')),
-                              column(2 , actionButton(inputId = 'boton_ver_bd2' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #3D9971; color: white; border-color: ; font-size: 12pt;')))),
+            tags$div(style = 'text-align: left;',
+                     fluidRow(column(6 , actionButton(inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'),
+                                     actionButton(inputId = 'boton_ver_bd2' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'),
+                                     actionButton(inputId = 'boton_ver_integracion2' , label = 'Información sobre Herramienta de Integración' , icon = icon('info-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'))
+                              )),
             tags$div(id = 'berenjena', style = 'display: none; text-align: center;' ,
                      tags$div(style = 'height: 20px;'),
                      box(width = 12 ,
@@ -416,6 +525,8 @@ server <- function(input, output, session) {
   observeEvent(input$boton_ver_visualizador , updateTabItems(session , inputId = 'menu_1' , selected = 'visualizador'))
   
   observeEvent(input$boton_ver_bd , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
+  
+  observeEvent(input$boton_ver_integracion , updateTabItems(session , inputId = 'menu_1' , selected = 'instrucciones'))
   
   # ===== BASES DE DATOS REMOTAS - PGJ =====
   observeEvent(input$bd_pgj , {
@@ -574,6 +685,12 @@ server <- function(input, output, session) {
   
   
   # ===== DESCRIPTORES DE VARIABLES =====
+  observeEvent(input$boton_ver_visualizador3 , updateTabItems(session , inputId = 'menu_1' , selected = 'visualizador'))
+  
+  output$pgj_cuantos <- renderText(format(nrow(special_bd$active_pgj) , big.mark = ','))
+  output$pgj_cuando1 <- renderText(str_to_title(format(range(special_bd$active_pgj$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$pgj_cuando2 <- renderText(str_to_title(format(range(special_bd$active_pgj$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
+  
   # = Campos PGJ
   output$texto_campos_pgj <- renderText({
     if (input$campos_pgj == 'Delito') {
@@ -772,6 +889,8 @@ server <- function(input, output, session) {
   # ===== INSTRUCCIONES VISUALIZADOR =====
   observeEvent(input$boton_ver_bd2 , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
   
+  observeEvent(input$boton_ver_integracion2 , updateTabItems(session , inputId = 'menu_1' , selected = 'instrucciones'))
+  
   observeEvent(input$boton_ver_instrucciones , {
     if (input$boton_ver_instrucciones %% 2 == 0) {
       hideElement(id = 'berenjena' , anim = TRUE)
@@ -867,8 +986,18 @@ server <- function(input, output, session) {
                                                             <li>Seleccionar "Gráficas Combinadas" genera una gráfica donde se realiza un conteo de todas las Bases de Datos seleccionadas</li>
                                                             <li>Cualquier otra opción permitirá analizar a detalle alguna base en particular y categorizar según sus variables particulares. Por ejemplo, "PGJ" permite categorizar según el delito registrado en la Carpeta de Investigación.</li>
                                                           </ul>
-                                                      </ul>'))
-    else if (input$no_instrucciones == 6) HTML(paste0())
+                                                      </ul>',
+                                                      'Además, el botón en la esquina superior derecha de la sección de gráficas permite realizar un acercamiento a las mismas.'))
+    else if (input$no_instrucciones == 6) HTML(paste0('<p>La primera pestaña de la sección de gráficas, "Gráficas por Totales", permite obtener el total de Incidentes Viales ocurridos según los filtros de las secciones anteriores. A través de "Temporalidad a Graficar" es posible obtener los totales por mes o por día:</p>',
+                                                      '<ul>
+                                                        <li><b>Por Mes</b> únicamente arrojará Gráficas de Línea con los totales de cada uno de los meses seleccionados. Al dar clic en ellas, se puede obtener el número exacto de incidentes en dicho mes.</li>
+                                                        <li><b>Por Día</b> permitirá saber el número de incidentes ocurridos durante cada uno de los días del periodo seleccionado. La línea delgada representa la frecuencia exacta de los incidentes, mientras que la más gruesa muestra un suavizado con la tendencia de estos incidentes. Al dar clic sobre la línea delgada, se obtendrá no sólo el total de incidentes, sino también la fecha exacta en la que ocurrieron.</li>
+                                                      </ul>',
+                                                      '<p>Las funciones de categorización y acercamiento a las gráficas son utilizables.</p>'))
+    else if (input$no_instrucciones == 7) HTML(paste0('<p>La segunda pestaña, "Gráficas por Día y Hora", permite conocer el número de incidentes viales ocurridos en función del día de la semana y el momento del día en el que ocurrieron.</p>',
+                                                      '<p>Debajo de "Temporalidad a Graficar" puede seleccionarse los Incidentes Viales ocurridos durante la <i>Mañana</i> (6:00 AM a 12:59 PM), <i>Tarde</i> (1:00 PM a 9:59PM) o durante la <i>Noche</i> (10:00 PM a 5:59 AM)</p>',
+                                                      '<p>Asimismo, en la parte inferior de la gráfica se puede encontrar una Gráfica de Barras que representa la proporción de incidentes ocurridos durante los Fines de Semana (Viernes, Sábado y Domingo) o Entre Semana (Lunes, Martes, Miércoles y Jueves)</p>',
+                                                      '<p>Las funcionalidades de click para obtener totales, categorización de datos y acercamiento a gráficas también se encuentran disponibles.</p>'))
   })
   
   # ===== ACOMODO DE FECHAS LÍMITE =====
