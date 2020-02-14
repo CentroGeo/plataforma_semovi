@@ -15,6 +15,7 @@ library(shinydashboard)
 library(shinyjs)
 library(leaflet.extras)
 library(htmltools)
+library(janitor)
 
 # ===== OPERACIONES INICIALES =====
 cdmx <- read_sf(dsn = "data/cdmx.shp", layer = "cdmx")
@@ -1726,15 +1727,13 @@ server <- function(input, output, session) {
                                iconSize = c(35,35)),
                    options = markerOptions(opacity = 0.9),
                    popup = paste0('<b>Incidente SSC</b><br/>',
-                                  '<b>Tipo de Evento</b>: ' , str_to_title(bd$tmp_ssc$tipo_evento, locale = 'es') , '<br/>',
+                                  '<b>Tipo de Evento</b>: ' , str_to_title(bd$tmp_ssc$tipo_de_evento, locale = 'es') , '<br/>',
                                   '<b>Fecha y Hora de Hechos</b>: ' , format(bd$tmp_ssc$timestamp , format = '%d/%m/%Y, %T'), '<br/>',
-                                  '<b>Tipo de Intersección</b>: ' , str_to_title(bd$tmp_ssc$tipo_interseccion, locale = 'es'), '<br/>' ,
-                                  '<b>Cuadrante SSC</b>: ' , ifelse(bd$tmp_ssc$cuadrante == 'SD' , 'Sin Datos' , bd$tmp_ssc$cuadrante) , '<br/>',
-                                  '<b>Vehículos Involucrados</b>: ' , str_to_title(str_replace(ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_4) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2 , bd$tmp_ssc$tipo_vehiculo_3 , bd$tmp_ssc$tipo_vehiculo_4),
-                                                                             ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_3) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2 , bd$tmp_ssc$tipo_vehiculo_3),
-                                                                                    ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_2) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2) ,
-                                                                                           bd$tmp_ssc$tipo_vehiculo_1))) , 'SD' , 'Sin Datos') , locale = 'es') , '<br/>' ,
-                                  '<b>Ruta de Transporte Público</b>: ' , ifelse(bd$tmp_ssc$ruta_transporte_publico == 'SD' , 'Sin Datos', bd$tmp_ssc$ruta_transporte_publico) , '<br/>' ,
+                                  '<b>Tipo de Intersección</b>: ' , str_to_title(bd$tmp_ssc$tipo_de_interseccion, locale = 'es'), '<br/>' ,
+                                  '<b>Vehículos Involucrados</b>: ' , str_to_title(str_replace(ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_4) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2 , bd$tmp_ssc$tipo_de_vehiculo_3 , bd$tmp_ssc$tipo_de_vehiculo_4),
+                                                                             ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_3) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2 , bd$tmp_ssc$tipo_de_vehiculo_3),
+                                                                                    ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_2) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2) ,
+                                                                                           bd$tmp_ssc$tipo_de_vehiculo_1))) , 'SD' , 'Sin Datos') , locale = 'es') , '<br/>' ,
                                   '<b>Condición de Víctima Principal</b>: ' , str_to_title(bd$tmp_ssc$condicion , locale = 'es') , '<br/>' ,
                                   '<b>Identidad de Víctima Principal</b>: ' , str_to_title(bd$tmp_ssc$identidad, locale = 'es') , '<br/>',
                                   '<b>Total de Occisos</b>: ' , bd$tmp_ssc$total_occisos , '<br/>' ,
@@ -2180,9 +2179,27 @@ server <- function(input, output, session) {
               tmp <- dates(as.character(filtro_fecha_sp()[[1]]) , format = 'y-m-d')
               count <- data.frame(ao = year(tmp) , mes = month(tmp), categoria = 'Sin Datos' , n = 0)
             }
-            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , tipo_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='tipo_evento')
-            else if (input$subgrafica_ssc == 'Identidad') count <- count(tmp , year(timestamp) , month(timestamp) , identidad) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='identidad')
-            count$categoria <- str_to_title(count$categoria , locale = 'es')}
+            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , tipo_de_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='tipo_de_evento')
+            else if (input$subgrafica_ssc == 'Identidad') {
+              count <- count(tmp , year(timestamp) , month(timestamp)) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)')
+              years <- unique(count$ao)
+              months <- unique(count$mes)
+              count <- data.frame(ao = as.integer() , mes = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+              for (ao in years) {
+                for (mes in months) {
+                  tmp2 <- filter(tmp , year(timestamp) == ao & month(timestamp) == mes)
+                  if (nrow(tmp2) != 0) {
+                    tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+                    tmp2$ao <- ao
+                    tmp2$mes <- mes
+                    tmp2 <- tmp2 %>% select(ao , mes , categoria , n)
+                    count <- rbind(count , tmp2)
+                  }
+                }
+              }
+            }
+            count$categoria <- str_to_title(count$categoria , locale = 'es')
+          }
           # =
           count$etiqueta <- count$mes
           count$etiqueta[count$etiqueta == 1] <- 'Ene'
@@ -2238,8 +2255,29 @@ server <- function(input, output, session) {
               tmp <- dates(as.character(filtro_fecha_sp()[[1]]) , format = 'y-m-d')
               count <- data.frame(ao = year(tmp) , mes = month(tmp) , dia = day(tmp) , categoria = 'Sin Datos' , n = 0)
             }
-            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , tipo_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' , 'categoria'='tipo_evento')
-            else if (input$subgrafica_ssc == 'Identidad') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , identidad) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' ,  'categoria'='identidad')
+            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , tipo_de_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' , 'categoria'='tipo_de_evento')
+            else if (input$subgrafica_ssc == 'Identidad') {
+              count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp)) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia'='day(timestamp)')
+              years <- unique(count$ao)
+              months <- unique(count$mes)
+              days <- unique(count$dia)
+              count <- data.frame(ao = as.integer() , mes = as.integer() , dia = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+              for (ao in years) {
+                for (mes in months) {
+                  for (dia in days) {
+                    tmp2 <- filter(tmp , year(timestamp) == ao & month(timestamp) == mes & day(timestamp) == dia)
+                    if (nrow(tmp2) != 0) {
+                      tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+                      tmp2$ao <- ao
+                      tmp2$mes <- mes
+                      tmp2$dia <- dia
+                      tmp2 <- tmp2 %>% select(ao , mes , dia , categoria , n)
+                      count <- rbind(count , tmp2)
+                    }
+                  }
+                }
+              }
+            }
             count$categoria <- str_to_title(count$categoria , locale = 'es')}
           # =
           count$fecha <- format(chron(dates(paste0(count$dia , '/' , count$mes , '/' ,count$ao) , format = 'd/m/y') , '00:00:00') , format = '%d/%m/%Y')
@@ -2620,17 +2658,31 @@ server <- function(input, output, session) {
       # ===
       if (is_graph == TRUE) {
         if (input$tiempo_grafica == 'Por Mes') {
-          grafica = grafica +
-            geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 2) +
-            scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
-                               minor_breaks = NULL,
-                               labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
-            scale_color_manual(values = paleta,
-                               limits = unique(count_final$categoria),
-                               name = 'Fuente de Datos' ,
-                               labels = unique(count_final$categoria)) +
-            ylim(0 , NA) +
-            labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          if (length(unique(count_final$etiqueta)) > 3) {
+            grafica = grafica +
+              geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 2) +
+              scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
+                                 minor_breaks = NULL,
+                                 labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
+              scale_color_manual(values = paleta,
+                                 limits = unique(count_final$categoria),
+                                 name = 'Fuente de Datos' ,
+                                 labels = unique(count_final$categoria)) +
+              ylim(0 , NA) +
+              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          }
+          else {
+            grafica = grafica +
+              geom_col(data = count_final , aes(x = ref , y = n , fill = categoria) , position = 'dodge') +
+              scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
+                                 minor_breaks = NULL,
+                                 labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
+              scale_fill_manual(values = paleta,
+                                 limits = unique(count_final$categoria),
+                                 name = 'Fuente de Datos' ,
+                                 labels = unique(count_final$categoria)) +
+              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          }
         }
         else if (input$tiempo_grafica == 'Por Día') {
           grafica = grafica +
@@ -2801,7 +2853,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_pgj2 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -2844,8 +2896,8 @@ server <- function(input, output, session) {
         if (!is.null(tmp)) {
           if (nrow(tmp) != 0) {
             if (input$subgrafica_ssc2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_ssc2 == 'Tipo de Evento') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_evento)$n)/10)*10
-            else if (input$subgrafica_ssc2 == 'Identidad') max <- ceiling(max(count(tmp , wday(timestamp) , identidad)$n)/10)*10
+            else if (input$subgrafica_ssc2 == 'Tipo de Evento') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_de_evento)$n)/10)*10
+            else if (input$subgrafica_ssc2 == 'Identidad') max <- (ceiling(max(count(tmp , wday(timestamp) , identidad)$n)/10)*10) + 5
           }}
         # =
         if (!is.null(tmp)) {
@@ -2857,7 +2909,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_ssc2 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -2866,7 +2918,7 @@ server <- function(input, output, session) {
           count$categoria <- 'SSC'
         }
         else if (input$subgrafica_ssc2 == 'Tipo de Evento') {
-          count <- count(tmp , wday(timestamp) , tipo_evento) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_evento')
+          count <- count(tmp , wday(timestamp) , tipo_de_evento) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_de_evento')
           for (i in seq(7)) {
             for (cat in unique(count$categoria)) {
               if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
@@ -2874,7 +2926,20 @@ server <- function(input, output, session) {
           count$categoria <- str_to_title(count$categoria , locale = 'es')
         }
         else if (input$subgrafica_ssc2 == 'Identidad') {
-          count <- count(tmp , wday(timestamp) , identidad) %>% rename('ref'='wday(timestamp)' , 'categoria'='identidad')
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)' )
+          weekdays <- unique(count$ref)
+          count <- data.frame(ref = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+          for (wd in weekdays) {
+            tmp2 <- filter(tmp , wday(timestamp) == wd)
+            if (nrow(tmp2) != 0) {
+              tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+              tmp2$ref <- wd
+              tmp2 <- tmp2 %>% select(ref , categoria , n)
+              count <- rbind(count , tmp2)
+            }
+          }
+          # =====
+          # count <- count(tmp , wday(timestamp) , identidad) %>% rename('ref'='wday(timestamp)' , 'categoria'='identidad')
           for (i in seq(7)) {
             for (cat in unique(count$categoria)) {
               if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
@@ -2923,7 +2988,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_c52 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -2996,7 +3061,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_axa2 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -3067,7 +3132,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_repubikla2 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -3233,7 +3298,28 @@ server <- function(input, output, session) {
     k <- hover_h$h
     if (!is.null(k) & !is.null(hover)) {
       if (nrow(k) != 0) {
-        point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
+        if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+          range <- c(NA , NA)
+          if (hover$x > 0.5 & hover$x <= 1.5) range <- c(0.5 , 1.5)
+          else if (hover$x > 1.5 & hover$x <= 2.5) range <- c(1.5 , 2.5)
+          else if (hover$x > 2.5 & hover$x <= 3.5) range <- c(2.5 , 3.5)
+          if (is.na(range[1])) return(NULL)
+          else {
+            intv <- 1/length(unique(k$categoria))
+            df <- data.frame(cat = as.character() , pos = as.integer() , min = as.numeric() , max = as.numeric(), stringsAsFactors = FALSE)
+            i <- 1
+            for (cat in sort(unique(k$categoria))) {
+              df[nrow(df) + 1,] <- c(cat , i , range[1] + (intv*(i-1)) , range[1] + (intv*i))
+              i <- i + 1}
+            for (i in 1:length(df$cat)) {
+              if (hover$x > df$min[i] & hover$x <= df$max[i]) {
+                ref <- (range[1] + range[2])/2
+                cat <- df[df$pos == i,]$cat
+                point <- k[k$categoria == cat & k$ref == ref,]
+                z <- FALSE}}
+          }
+        }
+        else point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
         if (nrow(point) == 0) return(NULL)
         # =
         left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
@@ -3242,9 +3328,16 @@ server <- function(input, output, session) {
         left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
         top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
         # =
-        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
-                        "left:", left_px + 10, "px; top:", top_px + 140, "px;
+        if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+          style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                          "left:", left_px + 10, "px; top:", top_px + 140, "px;
                       padding: 5px 10px 0px; border-radius: 10px;")
+        }
+        else {
+          style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                          "left:", left_px + 10, "px; top:", top_px + 140, "px;
+                      padding: 5px 10px 0px; border-radius: 10px;")
+        }
         # =
         if (input$filtro_incidente == 'Decesos') palabra <- ' Decesos'
         else if (input$filtro_incidente == 'Lesionados') palabra <- ' Lesionados'
@@ -3254,6 +3347,7 @@ server <- function(input, output, session) {
         if (point$n == 1) palabra <- substring(palabra , 0 , nchar(palabra) - 1)
         # =
         if (input$tiempo_grafica == 'Por Mes') {
+          if (length(unique(k$etiqueta)) <= 3 & point$n <= hover$y) return(NULL)
           tags$div(
             style = style,
             p(HTML(paste0('<b>', point$categoria ,'</b><br/>',
@@ -3278,9 +3372,31 @@ server <- function(input, output, session) {
   
   output$click_info_modal_a <- renderUI({
     hover <- input$plot_click_modal_a
+    if (is.null(hover)) return(NULL)
     k <- hover_h$h
     if (!is.null(k)) {
-      point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
+      if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+        range <- c(NA , NA)
+        if (hover$x > 0.5 & hover$x <= 1.5) range <- c(0.5 , 1.5)
+        else if (hover$x > 1.5 & hover$x <= 2.5) range <- c(1.5 , 2.5)
+        else if (hover$x > 2.5 & hover$x <= 3.5) range <- c(2.5 , 3.5)
+        if (is.na(range[1])) return(NULL)
+        else {
+          intv <- 1/length(unique(k$categoria))
+          df <- data.frame(cat = as.character() , pos = as.integer() , min = as.numeric() , max = as.numeric(), stringsAsFactors = FALSE)
+          i <- 1
+          for (cat in sort(unique(k$categoria))) {
+            df[nrow(df) + 1,] <- c(cat , i , range[1] + (intv*(i-1)) , range[1] + (intv*i))
+            i <- i + 1}
+          for (i in 1:length(df$cat)) {
+            if (hover$x > df$min[i] & hover$x <= df$max[i]) {
+              ref <- (range[1] + range[2])/2
+              cat <- df[df$pos == i,]$cat
+              point <- k[k$categoria == cat & k$ref == ref,]
+              z <- FALSE}}
+        }
+      }
+      else point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
       if (nrow(point) == 0) return(NULL)
       # =
       left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
@@ -3289,10 +3405,17 @@ server <- function(input, output, session) {
       left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
       top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
       # =
-      style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
-                      "left:", left_px + 10, "px; top:", top_px - 40, "px;
+      if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                        "left:", left_px + 10, "px; top:", top_px - 40, "px;
+                      padding: 5px 10px 0px; border-radius: 10px;")
+      }
+      else {
+        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                        "left:", left_px + 10, "px; top:", top_px - 40, "px;
                       padding: 5px 10px 0px; border-radius: 10px;
-                      font-size: 125%;")
+                      font-size: 125%;") 
+      }
       # =
       if (input$filtro_incidente == 'Decesos') palabra <- ' Decesos'
       else if (input$filtro_incidente == 'Lesionados') palabra <- ' Lesionados'
@@ -3302,6 +3425,7 @@ server <- function(input, output, session) {
       if (point$n == 1) palabra <- substring(palabra , 0 , nchar(palabra) - 1)
       # =
       if (input$tiempo_grafica == 'Por Mes') {
+        if (length(unique(k$etiqueta)) <= 3 & point$n <= hover$y) return(NULL)
         tags$div(
           style = style,
           p(HTML(paste0('<b>', point$categoria ,'</b><br/>',
@@ -3441,27 +3565,7 @@ server <- function(input, output, session) {
     } else NULL
   })
   
-  # ===== TABLA CON TOTALES =====
-  # output$tabla_totales <- renderTable(striped = TRUE , digits = 0, spacing = 'xs' , {
-  #   k <- NULL
-  #   if (!is.null(hover_h$hk1)) k <- hover_h$hk1
-  #   else if (!is.null(hover_h$hk2)) k <- hover_h$hk2
-  #   # =
-  #   if (is.null(k)) NULL
-  #   else if (input$tipo_grafica == 'Gráficas Combinadas') {
-  #     a <- data.frame(Fuente = unique(k$fuente))
-  #     for (i in unique(k$etiqueta)) {
-  #       a[i] <- filter(k , etiqueta == i)$n}
-  #     # =
-  #     tmp <- aggregate(k$n , by = list(fuente = k$fuente) , FUN = sum)
-  #     orden <- c('PGJ' , 'SSC' , 'C5' , 'AXA' , 'Repubikla')
-  #     tmp$fuente <- factor(as.character(tmp$fuente) , levels = orden)
-  #     tmp <- tmp[order(tmp$fuente),]
-  #     a['Total'] <- tmp$x
-  #     # =
-  #     a
-  #   }
-  # })
+  
 }
 
 shinyApp(ui = ui, server = server)

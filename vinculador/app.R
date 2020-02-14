@@ -151,7 +151,7 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                          column(6, strong('Filtros Aplicables', style = 'color: #848888; font-size: 16pt;'),
                                                                 dateRangeInput(inputId = 'filtro_fecha' , label = 'Periodo de Tiempo', format = 'dd/MM/yyyy', language = 'es', separator = 'a',
                                                                                start = '2018-01-01' , end = '2018-12-31',
-                                                                               min = '2018-01-01' , max = '2019-04-30'),
+                                                                               min = '2018-01-01' , max = '2019-12-31'),
                                                                 radioButtons(inputId = 'filtro_incidente' , label = 'Tipo de Inciente', inline = TRUE ,
                                                                              choiceNames = c('Decesos' , 'Lesionados' , 'Accidentes' , 'Todos'),
                                                                              choiceValues = c('Decesos' , 'Lesionados', 'Accidentes' , 'Todos')),
@@ -201,10 +201,14 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                          tags$div(id = 'div_errorvinc_a'),
                                                                          fluidRow(column(6,
                                                                                          tags$p(strong(textOutput(outputId = 'texto_bd_auxiliar_a' , inline = TRUE))),
-                                                                                         tableOutput(outputId = 'tabla_bd_auxiliar_a')),
+                                                                                         tableOutput(outputId = 'tabla_bd_auxiliar_a'),
+                                                                                         tags$div(id = 'div_remove_aux_a' , style = 'display: none;' ,
+                                                                                                  actionButton(inputId = 'boton_remove_a' , label = strong('Quitar selección') , icon = icon('window-close')))),
                                                                                   column(6,
                                                                                          tags$p(strong(textOutput(outputId = 'texto_bd_auxiliar_b' , inline = TRUE))),
-                                                                                         tableOutput(outputId = 'tabla_bd_auxiliar_b')))
+                                                                                         tableOutput(outputId = 'tabla_bd_auxiliar_b'),
+                                                                                         tags$div(id = 'div_remove_aux_b' , style = 'display: none;' ,
+                                                                                                  actionButton(inputId = 'boton_remove_b' , label = strong('Quitar selección') , icon = icon('window-close')))))
                                                                          )),
                                                             tags$div(id = 'div_tab2_c',
                                                                      box(width = 12,
@@ -213,11 +217,11 @@ ui <- dashboardPage(title = 'Vinculación de Incidentes Viales - SEMOVI',
                                                                          tags$div(style = 'font-size: 80%;',
                                                                                   dataTableOutput(outputId = 'vinculos_logrados_a')),
                                                                          tags$div(style = 'background-color: white; height: 25px;'),
-                                                                         tags$p(strong('Vinculos Parciales PGJ-SSC')),
+                                                                         tags$p(strong(textOutput(outputId = 'parciales_a' , inline = TRUE))),
                                                                          tags$div(style = 'font-size: 80%;',
                                                                                   dataTableOutput(outputId = 'vinculos_logrados_b')),
                                                                          tags$div(style = 'background-color: white; height: 25px;'),
-                                                                         tags$p(strong('Vinculos Parciales PGJ-C5')),
+                                                                         tags$p(strong(textOutput(outputId = 'parciales_b' , inline = TRUE))),
                                                                          tags$div(style = 'font-size: 80%;',
                                                                                   dataTableOutput(outputId = 'vinculos_logrados_c')),
                                                                          tags$div(style = 'background-color: white; height: 25px;'),
@@ -586,6 +590,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$generar_bd , {
+    # browser()
     if (input$generar_bd == 1) {
       insertUI(selector = '#div_alerta_c' , where = 'afterEnd' , immediate = TRUE,
                tags$div(id = 'div_alerta_d' ,
@@ -628,7 +633,7 @@ server <- function(input, output, session) {
         # =
         ssc_tmp <- filter(ssc_tmp , timestamp >= dates(as.character(input$filtro_fecha[1]) , format = 'y-m-d') & timestamp <= dates(as.character(input$filtro_fecha[2]) , format = 'y-m-d'))
         # =
-        tmp = data.frame(id_original = as.character(ssc_tmp$id),
+        tmp = data.frame(id_original = as.character(ssc_tmp$no_folio),
                          base_original = replicate(nrow(ssc_tmp) , 'SSC'),
                          timestamp = ssc_tmp$timestamp,
                          geometry = ssc_tmp$geometry)
@@ -737,7 +742,7 @@ server <- function(input, output, session) {
       # =
       ssc_tmp <- filter(ssc_tmp , timestamp >= dates(as.character(input$filtro_fecha[1]) , format = 'y-m-d') & timestamp <= dates(as.character(input$filtro_fecha[2]) , format = 'y-m-d'))
       # =
-      tmp = data.frame(id_original = as.character(ssc_tmp$id),
+      tmp = data.frame(id_original = as.character(ssc_tmp$no_folio),
                        base_original = replicate(nrow(ssc_tmp) , 'SSC'),
                        timestamp = ssc_tmp$timestamp,
                        geometry = ssc_tmp$geometry)
@@ -888,10 +893,10 @@ server <- function(input, output, session) {
         a[nrow(a) + 1,] = c('Alcaldía', str_to_title(tmp$alcaldia_hechos , locale = 'es'))
       }
       if (eventos_mapa$principal$base_original == 'SSC') {
-        tmp <- filter(ssc , id == eventos_mapa$principal$id_original)
+        tmp <- filter(ssc , no_folio == eventos_mapa$principal$id_original)
         tmp['geometry'] <- NULL
         a[nrow(a) + 1,] = c('Fecha y Hora de Hechos', format(tmp$timestamp , format = '%d/%m/%Y, %T'))
-        a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_evento , locale = 'es'))
+        a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_de_evento , locale = 'es'))
         a[nrow(a) + 1,] = c('Calle', str_to_title(tmp$punto_1 , locale = 'es'))
         a[nrow(a) + 1,] = c('Colonia', str_to_title(tmp$colonia , locale = 'es'))
         a[nrow(a) + 1,] = c('Alcaldía', str_to_title(tmp$alcaldia , locale = 'es'))
@@ -982,11 +987,11 @@ server <- function(input, output, session) {
       tmp <- filter(tmp , base_original == 'SSC')
       tmp <- filter(tmp , id_global %in% bd$posibles$id_global)
       seleccionados$a <- tmp
-      tmp <- filter(ssc , id == tmp$id_original)
+      tmp <- filter(ssc , no_folio == tmp$id_original)
       # =
       tmp['geometry'] <- NULL
       a[nrow(a) + 1,] = c('Fecha y Hora de Hechos', format(tmp$timestamp , format = '%d/%m/%Y, %T'))
-      a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_evento , locale = 'es'))
+      a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_de_evento , locale = 'es'))
       a[nrow(a) + 1,] = c('Calle', str_to_title(tmp$punto_1 , locale = 'es'))
       a[nrow(a) + 1,] = c('Colonia', str_to_title(tmp$colonia , locale = 'es'))
       a[nrow(a) + 1,] = c('Alcaldía', str_to_title(tmp$alcaldia , locale = 'es'))
@@ -1042,11 +1047,11 @@ server <- function(input, output, session) {
         tmp <- filter(tmp , base_original == 'SSC')
         tmp <- filter(tmp , id_global %in% bd$posibles$id_global)
         seleccionados$b <- tmp
-        tmp <- filter(ssc , id == tmp$id_original)
+        tmp <- filter(ssc , no_folio == tmp$id_original)
         # =
         tmp['geometry'] <- NULL
         a[nrow(a) + 1,] = c('Fecha y Hora de Hechos', format(tmp$timestamp , format = '%d/%m/%Y, %T'))
-        a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_evento , locale = 'es'))
+        a[nrow(a) + 1,] = c('Tipo de Evento', str_to_title(tmp$tipo_de_evento , locale = 'es'))
         a[nrow(a) + 1,] = c('Calle', str_to_title(tmp$punto_1 , locale = 'es'))
         a[nrow(a) + 1,] = c('Colonia', str_to_title(tmp$colonia , locale = 'es'))
         a[nrow(a) + 1,] = c('Alcaldía', str_to_title(tmp$alcaldia , locale = 'es'))
@@ -1070,6 +1075,20 @@ server <- function(input, output, session) {
         eventos_mapa$aux2 <- a
       }
     }
+  })
+  
+  observeEvent(eventos_mapa$aux1 , if (!is.null(eventos_mapa$aux1)) showElement(id = 'div_remove_aux_a' , anim = FALSE))
+  
+  observeEvent(input$boton_remove_a , {
+    eventos_mapa$aux1 <- NULL
+    hideElement(id = 'div_remove_aux_a' , anim = FALSE)
+  })
+  
+  observeEvent(eventos_mapa$aux2 , if (!is.null(eventos_mapa$aux2)) showElement(id = 'div_remove_aux_b' , anim = FALSE))
+  
+  observeEvent(input$boton_remove_b , {
+    eventos_mapa$aux2 <- NULL
+    hideElement(id = 'div_remove_aux_b' , anim = FALSE)
   })
   
   # = Tabla Auxiliar A
@@ -1110,6 +1129,8 @@ server <- function(input, output, session) {
                           strong('¡Importante!'), 'Por favor seleccione algún elemento del mapa para realizar la vinculación.'))
       }
       else {
+        hideElement(id = 'div_remove_aux_a' , anim = FALSE)
+        hideElement(id = 'div_remove_aux_b' , anim = FALSE)
         if (!is.null(eventos_mapa$aux1)) {
           if (eventos_mapa$aux1_t == 'PGJ') {
             bd$unificada[bd$unificada$id_global == eventos_mapa$principal$id_global, 'id_PGJ'] <- as.character(seleccionados$a$id_original)
@@ -1258,6 +1279,8 @@ server <- function(input, output, session) {
                           strong('¡Importante!'), 'Por favor seleccione algún elemento del mapa para realizar la vinculación.'))
       }
       else {
+        hideElement(id = 'div_remove_aux_a' , anim = FALSE)
+        hideElement(id = 'div_remove_aux_b' , anim = FALSE)
         # print(eventos_mapa$principal)
         if (!is.null(eventos_mapa$aux1)) {
           if (eventos_mapa$aux1_t == 'PGJ') {
@@ -1420,6 +1443,8 @@ server <- function(input, output, session) {
   
   # = Evento no Encontrado
   observeEvent(input$boton_novincular , {
+    hideElement(id = 'div_remove_aux_a' , anim = FALSE)
+    hideElement(id = 'div_remove_aux_b' , anim = FALSE)
     removeUI(selector = '#div_errorvinc_b')
     if (count_muestra$i >= (nrow(bd$muestra))) {
       m_confusion$list <- append(m_confusion$list , eventos_mapa$principal$id_global)
@@ -1460,61 +1485,15 @@ server <- function(input, output, session) {
   
   # ===== TABLA DE VÍNCULOS LOGRADOS =====
   output$vinculos_logrados_a <- renderDataTable({
-    if ('C5' %in% input$filtro_bd) {
-       tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))
-       tmp$geometry <- NULL
-       tmp <- distinct(tmp %>% select(id_PGJ , id_SSC , id_C5))
-       tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
-       tmp$geometry <- NULL
-       tmp <- tmp %>% rename('id_PGJ'='id')
-       tmp <- merge(ssc , tmp , by.x = 'id' , by.y = 'id_SSC')
-       tmp$geometry <- NULL
-       tmp <- tmp %>% rename('id_SSC'='id')
-       tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
-       tmp$geometry <- NULL
-       tmp <- tmp %>% rename('id_C5'='folio')
-       # =
-       tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
-       tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
-       tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
-       tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
-       tmp$tipo_evento <- str_to_title(tmp$tipo_evento , locale = 'es')
-       tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , id_C5 , tipo_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
-         rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_evento')
-       # =
-       datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
-    }
-  })
-  
-  output$vinculos_logrados_b <- renderDataTable({
-    tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & is.na(id_C5))
+    tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))
     tmp$geometry <- NULL
-    tmp <- distinct(tmp %>% select(id_PGJ , id_SSC))
+    tmp <- distinct(tmp %>% select(id_PGJ , id_SSC , id_C5))
     tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
     tmp$geometry <- NULL
     tmp <- tmp %>% rename('id_PGJ'='id')
-    tmp <- merge(ssc , tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp <- merge(ssc , tmp , by.x = 'no_folio' , by.y = 'id_SSC')
     tmp$geometry <- NULL
-    tmp <- tmp %>% rename('id_SSC'='id')
-    # =
-    tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
-    tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
-    tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
-    tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
-    tmp$tipo_evento <- str_to_title(tmp$tipo_evento , locale = 'es')
-    tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , tipo_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
-      rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_evento')
-    # =
-    datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
-  })
-  
-  output$vinculos_logrados_c <- renderDataTable({
-    tmp <- filter(bd$unificada , !is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))
-    tmp$geometry <- NULL
-    tmp <- distinct(tmp %>% select(id_PGJ , id_C5))
-    tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
-    tmp$geometry <- NULL
-    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp <- tmp %>% rename('id_SSC'='no_folio')
     tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
     tmp$geometry <- NULL
     tmp <- tmp %>% rename('id_C5'='folio')
@@ -1523,11 +1502,111 @@ server <- function(input, output, session) {
     tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
     tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
     tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
-    tmp$incidente_c4 <- str_to_title(tmp$incidente_c4 , locale = 'es')
-    tmp <- tmp %>% select(timestamp.y , id_PGJ , id_C5 , incidente_c4 , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
-      rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='incidente_c4')
+    tmp$tipo_de_evento <- str_to_title(tmp$tipo_de_evento , locale = 'es')
+    tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , id_C5 , tipo_de_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+      rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_de_evento')
     # =
-    datatable(tmp , rownames = FALSE , options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+    datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+  })
+  
+  output$parciales_a <- renderText({
+    if (bd$reference == 'PGJ' | bd$reference == 'SSC') 'Vínculos Parciales PGJ-SSC'
+    else 'Vínculos Parciales PGJ-C5'
+  })
+  
+  output$vinculos_logrados_b <- renderDataTable({
+    if (bd$reference == 'PGJ' | bd$reference == 'SSC') {
+      tmp <- filter(bd$unificada , !is.na(id_PGJ) & !is.na(id_SSC) & is.na(id_C5))
+      tmp$geometry <- NULL
+      tmp <- distinct(tmp %>% select(id_PGJ , id_SSC))
+      tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_PGJ'='id')
+      tmp <- merge(ssc , tmp , by.x = 'no_folio' , by.y = 'id_SSC')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_SSC'='no_folio')
+      # =
+      tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+      tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+      tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+      tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+      tmp$tipo_de_evento <- str_to_title(tmp$tipo_de_evento , locale = 'es')
+      tmp <- tmp %>% select(timestamp.y , id_PGJ , id_SSC , tipo_de_evento , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+        rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='tipo_de_evento')
+      # =
+      datatable(tmp , rownames = FALSE, options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+    }
+    else {
+      tmp <- filter(bd$unificada , !is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))
+      tmp$geometry <- NULL
+      tmp <- distinct(tmp %>% select(id_PGJ , id_C5))
+      tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_PGJ'='id')
+      tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_C5'='folio')
+      # =
+      tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+      tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+      tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+      tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+      tmp$incidente_c4 <- str_to_title(tmp$incidente_c4 , locale = 'es')
+      tmp <- tmp %>% select(timestamp.y , id_PGJ , id_C5 , incidente_c4 , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+        rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='incidente_c4')
+      # =
+      datatable(tmp , rownames = FALSE , options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+    }
+  })
+  
+  output$parciales_b <- renderText({
+    if (bd$reference == 'PGJ') 'Vínculos Parciales PGJ-C5'
+    else 'Vínculos Parciales SSC-C5'
+  })
+  
+  output$vinculos_logrados_c <- renderDataTable({
+    if (bd$reference == 'PGJ') {
+      tmp <- filter(bd$unificada , !is.na(id_PGJ) & is.na(id_SSC) & !is.na(id_C5))
+      tmp$geometry <- NULL
+      tmp <- distinct(tmp %>% select(id_PGJ , id_C5))
+      tmp <- merge(pgj , tmp , by.x = 'id' , by.y = 'id_PGJ')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_PGJ'='id')
+      tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_C5'='folio')
+      # =
+      tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+      tmp$calle_hechos <- str_to_title(tmp$calle_hechos , locale = 'es')
+      tmp$colonia_hechos <- str_to_title(tmp$colonia_hechos , locale = 'es')
+      tmp$alcaldia_hechos <- str_to_title(tmp$alcaldia_hechos , locale = 'es')
+      tmp$incidente_c4 <- str_to_title(tmp$incidente_c4 , locale = 'es')
+      tmp <- tmp %>% select(timestamp.y , id_PGJ , id_C5 , incidente_c4 , calle_hechos , colonia_hechos , alcaldia_hechos) %>%
+        rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='calle_hechos' , 'Colonia'='colonia_hechos' , 'Alcaldía'='alcaldia_hechos' , 'Evento'='incidente_c4')
+      # =
+      datatable(tmp , rownames = FALSE , options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+    }
+    else {
+      tmp <- filter(bd$unificada , is.na(id_PGJ) & !is.na(id_SSC) & !is.na(id_C5))
+      tmp$geometry <- NULL
+      tmp <- distinct(tmp %>% select(id_SSC , id_C5))
+      tmp <- merge(ssc , tmp , by.x = 'no_folio' , by.y = 'id_SSC')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_SSC'='no_folio')
+      tmp <- merge(c5 , tmp , by.x = 'folio' , by.y = 'id_C5')
+      tmp$geometry <- NULL
+      tmp <- tmp %>% rename('id_C5'='folio')
+      # =
+      tmp$timestamp.y <- format(tmp$timestamp.y , format = '%d/%m/%Y , %T')
+      tmp$punto_1 <- str_to_title(tmp$punto_1 , locale = 'es')
+      tmp$colonia <- str_to_title(tmp$colonia , locale = 'es')
+      tmp$alcaldia <- str_to_title(tmp$alcaldia , locale = 'es')
+      tmp$tipo_de_evento <- str_to_title(tmp$tipo_de_evento , locale = 'es')
+      tmp <- tmp %>% select(timestamp.y , id_SSC , id_C5 , tipo_de_evento , punto_1 , colonia , alcaldia) %>%
+        rename('Fecha y Hora de Hechos'='timestamp.y' , 'Calle'='punto_1' , 'Colonia'='colonia' , 'Alcaldía'='alcaldia' , 'Evento'='tipo_de_evento')
+      # =
+      datatable(tmp , rownames = FALSE , options = list(searching = FALSE , pageLength = 5 , lengthChange = FALSE))
+    }
   })
   
   output$tabla_parametros <- renderTable(bordered = TRUE , width = '100%' , align = 'c' , digits = 2 , rownames = TRUE , {
@@ -1729,10 +1808,10 @@ server <- function(input, output, session) {
     tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
     tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
     tmp$geometry <- NULL
-    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp <- merge(x = ssc , y = tmp , by.x = 'no_folio' , by.y = 'id_SSC')
     tmp$geometry <- NULL
-    tmp <- tmp %>% rename('id_PGJ'='id.y')
-    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp <- tmp %>% rename('id_SSC'='no_folio')
     tmp <- merge(x = c5 , y = tmp , by.x = 'folio' , by.y = 'id_C5')
     tmp$geometry <- NULL
     tmp$id_global <- seq.int(nrow(tmp))
@@ -1741,7 +1820,7 @@ server <- function(input, output, session) {
     tmp$hora_incidente <- format(tmp$timestamp , format = '%T')
     bd$incidentes_viales <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                                      delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                                     no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                                     tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                                      codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     
     # === PGJ / SSC
@@ -1750,10 +1829,10 @@ server <- function(input, output, session) {
     tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
     tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
     tmp$geometry <- NULL
-    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_SSC')
+    tmp <- merge(x = ssc , y = tmp , by.x = 'no_folio' , by.y = 'id_SSC')
     tmp$geometry <- NULL
-    tmp <- tmp %>% rename('id_PGJ'='id.y')
-    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp <- tmp %>% rename('id_PGJ'='id')
+    tmp <- tmp %>% rename('id_SSC'='no_folio')
     tmp <- filter(tmp , !id_PGJ %in% bd$incidentes_viales$id_PGJ)
     tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
     tmp$fecha_incidente <- format(tmp$timestamp.x , format = '%d/%m/%Y')
@@ -1762,7 +1841,7 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
@@ -1784,20 +1863,20 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
     
     # === SSC/C5
     tmp <- filter(bd$unificada , base_original == 'SSC') %>% select(id_original , id_C5)
-    tmp <- merge(x = ssc , y = tmp , by.x = 'id' , by.y = 'id_original')
+    tmp <- merge(x = ssc , y = tmp , by.x = 'no_folio' , by.y = 'id_original')
     tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
     tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
     tmp$geometry <- NULL
     tmp <- merge(x = c5 , y = tmp , by.x = 'folio' , by.y = 'id_C5')
     tmp$geometry <- NULL
-    tmp <- tmp %>% rename('id_C5'='folio' , 'id_SSC' = 'id')
+    tmp <- tmp %>% rename('id_C5'='folio' , 'id_SSC' = 'no_folio')
     tmp <- filter(tmp , !id_SSC %in% bd$incidentes_viales$id_SSC)
     tmp$id_global <- seq.int(nrow(tmp)) + tail(bd$incidentes_viales$id_global , n = 1)
     tmp$fecha_incidente <- format(tmp$timestamp.x , format = '%d/%m/%Y')
@@ -1807,7 +1886,7 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
@@ -1826,14 +1905,14 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
     
     # === SSC
-    tmp <- filter(ssc , id %in% filter(bd$unificada , is.na(id_PGJ) , !is.na(id_SSC) , is.na(id_C5))$id_original)
-    tmp <- tmp %>% rename('id_SSC'='id')
+    tmp <- filter(ssc , no_folio %in% filter(bd$unificada , is.na(id_PGJ) , !is.na(id_SSC) , is.na(id_C5))$id_original)
+    tmp <- tmp %>% rename('id_SSC'='no_folio')
     tmp$lat <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,2])
     tmp$lon <- as.numeric(st_coordinates(st_transform(tmp$geometry , 4326))[,1])
     tmp$geometry <- NULL
@@ -1846,7 +1925,7 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
@@ -1866,7 +1945,7 @@ server <- function(input, output, session) {
     tmp[setdiff(names(bd$incidentes_viales) , names(tmp))] <- NA
     tmp <- tmp %>% select(id_global , id_PGJ , id_SSC , id_C5 , fecha_incidente , hora_incidente , calle_hechos , colonia_hechos , alcaldia_hechos , lat , lon,
                           delito, categoria_delito , fiscalia , agencia , unidad_investigacion,
-                          no_folio , tipo_evento , tipo_interseccion , zona , cuadrante , sector, reporte , tipo_vehiculo_1 , tipo_vehiculo_2 , tipo_vehiculo_3 , tipo_vehiculo_4, marca_vehiculo_1 , marca_vehiculo_2 , marca_vehiculo_3 , marca_vehiculo_4 , ruta_transporte_publico, matricula_1, matricula_2 , matricula_3 , matricula_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , matricula_unidad_medica , lugar_del_deceso. , trasladados_lesionado , hospital , observaciones,
+                          tipo_de_evento , tipo_de_interseccion , tipo_de_vehiculo_1 , tipo_de_vehiculo_2 , tipo_de_vehiculo_3 , tipo_de_vehiculo_4, marca_de_vehiculo_1 , marca_de_vehiculo_2 , marca_de_vehiculo_3 , marca_de_vehiculo_4, condicion , lesiones , edad_occiso , edad_lesionado , total_occisos , total_lesionados , identidad , unidad_medica_de_apoyo , lugar_del_deceso , trasladado_s_lesionado , hospital , observaciones,
                           codigo_cierre , incidente_c4 , clas_con_f_alarma , tipo_entrada)
     bd$incidentes_viales <- rbind(bd$incidentes_viales , tmp , stringAsFactors = FALSE)
     bd$incidentes_viales <- bd$incidentes_viales[-nrow(bd$incidentes_viales),]
