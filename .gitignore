@@ -43,3 +43,5 @@ vignettes/*.pdf
 vinculador/data
 vinculador/tmp
 visualizador/data
+visualizador/www/tmp.png
+visualizador/www/img

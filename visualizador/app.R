@@ -115,23 +115,601 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
   dashboardHeader(title = 'Incidentes Viales'),
   # ===== SIDEBAR =====
   dashboardSidebar(sidebarMenu(id = 'menu_1',
-                               menuItem(text = 'Instrucciones' , selected = TRUE , icon = icon('question-circle') , tabName = 'instrucciones'),
-                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador')),
-                   tags$div(tags$p(strong('Realizado en colaboración por:')),
-                            tags$table(style = 'width: 100%;',
-                                       tags$tr(tags$th('') , tags$th('')),
-                                       tags$tr(tags$td(colspan = 2,
-                                                       tags$img(src = 'gobcdmx.png' , style = 'display: block; margin: auto; width: 100%; padding-bottom: 15px'))),
-                                       tags$tr(tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                                                                tags$img(src = 'axa.png' , style = 'height: 45px;'))),
-                                               tags$td(tags$div(style = 'text-align: center; padding-bottom: 15px',
-                                                                tags$img(src = 'conacyt.png' , style = 'height: 50px;')))),
-                                       tags$tr(tags$td(tags$div(style = 'text-align: center;',
-                                                                tags$img(src = 'centrogeo.png' , style = 'height: 50px;'))),
-                                               tags$td(tags$div(style = 'text-align: center;',
-                                                                tags$img(src = 'datalab.png' , style = 'width: 80px;'))))),
-                            style = 'position: absolute; bottom: 0; left: 0; padding: 10px 10px; background-color: white; width: 100%; color: #697070;')),
-  dashboardBody(useShinyjs() , tags$head(tags$link(rel = 'stylesheet' , type = 'text/css' , href = 'custom.css?version=71')), tabItems(
+                               menuItem(text = 'Introducción' , selected = TRUE , icon = icon('door-open') , tabName = 'introduccion'),
+                               menuItem(text = 'Bases de Datos' , icon = icon('layer-group') , tabName = 'bd'),
+                               menuItem(text = 'Visualizador', icon = icon('globe-americas') , tabName = 'visualizador'),
+                               menuItem(text = 'Integración de Información' , icon = icon('question-circle') , tabName = 'instrucciones'))
+                   ),
+  dashboardBody(useShinyjs() , tags$head(tags$link(rel = 'stylesheet' , type = 'text/css' , href = 'custom.css?version=21')), tabItems(
+    # ===== TAB INTRODUCCIÓN =====
+    tabItem(tabName = 'introduccion' ,
+            tags$div(style = 'width: 100%; height: 90vh; text-align: center; padding-top: 1vh;',
+                     tags$div(style = 'background-color: white; margin: auto; width: 80%; padding: 30px; border-radius: 10px;',
+                              tags$img(src = 'logo_semovi.png' , style = 'height: 100px;'),
+                              tags$p(strong('Visualizador de Incidentes Viales') , style = 'font-size: 32pt; color: #848888; padding-bottom: 15px;'),
+                              tags$div(style = 'text-align: justify; margin: auto; width: 90%; font-size: 12pt; color: #697070;',
+                                       fluidRow(column(9,
+                                                       tags$p(strong('Panorama General'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('Uno de los compromisos de la Secretaría de Movilidad de la Ciudad de México (SEMOVI) es entender las características de los hechos de tránsito que se suscitan en la ciudad, con el objetivo de planear estrategias de seguridad vial con base en evidencia. Por lo que a partir de la liberación de distintas fuentes de datos oficiales, la SEMOVI en colaboración con el Laboratorio de Datos Geoespaciales (DataLab) del Centro de Ciencias de Información Geoespacial (CentroGeo) y la Aseguradora AXA, se dieron a la tarea de desarrollar herramientas de visualización y manejo de información, para entender la dinámica espacial que siguen los hechos de tránsito.')),
+                                                column(3,
+                                                       tags$img(src = 'img/intro_a.jpg' , style = 'width: 100%;'))),
+                                       tags$div(style = 'height: 20px; background-color: white;'),
+                                       fluidRow(column(3,
+                                                       tags$img(src = 'img/intro_b.jpg' , style = 'width: 100%;')),
+                                                column(9,
+                                                       tags$p(strong('Herramienta de Geovisualización'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('Esta herramienta permite a los usuarios explorar y analizar de forma interactiva, los datos disponibles de la Secretaría de Seguridad Ciudadana (SSC), la Procuraduría General de Justicia (PGJ), el Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5), la aseguradora AXA y el proyecto colaborativo Repubikla.'),
+                                                       tags$div(style = 'font-size: 24pt; text-align: right;',
+                                                                actionButton(inputId = 'boton_ver_visualizador' , label = 'Ir a Visualizador' , icon = icon('globe-americas') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;')
+                                                                )
+                                                       )),
+                                       tags$div(style = 'height: 20px; background-color: white;'),
+                                       fluidRow(column(9,
+                                                       tags$p(strong('Herramienta de Integración de Información'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                                       tags$p('En la Ciudad de México los datos de incidentes viales  son recopilados por diferentes instituciones gubernamentales basándose en los objetivos particulares de cada una de ellas, por lo que no existe una única fuente de datos. Para la SEMOVI es importante poder contar con un panorama general, que integre los datos de las diferentes instituciones. Por lo que se desarrolló una aplicación que permite explorar los datos para complementar e integrar registros en una sola fuente.'),
+                                                       tags$div(style = 'font-size: 24pt; text-align: left;',
+                                                                actionButton(inputId = 'boton_ver_integracion' , label = 'Información sobre Herramienta de Integración' , icon = icon('info-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 14pt;'))),
+                                                column(3,
+                                                       tags$img(src = 'img/intro_c.jpg' , style = 'width: 100%;')))
+                                       ),
+                              tags$div(style = 'height: 20px; background-color: white;'),
+                              tags$div(style = 'margin: auto; width: 90%; text-align: left; color: #848888;',
+                                       tags$p(strong('Realizado en colaboración por:'))),
+                              tags$div(style = 'margin: auto; width: 90%;',
+                                       fluidRow(column(3, tags$img(src = 'logo_semovi.png' , style = 'height: 45px;')),
+                                                column(2, tags$img(src = 'axa.png' , style = 'height: 50px;')),
+                                                column(2, tags$img(src = 'conacyt.png' , style = 'height: 50px;')),
+                                                column(2, tags$img(src = 'centrogeo.png' , style = 'height: 50px;')),
+                                                column(3, tags$img(src = 'datalab.png' , style = 'height: 30px;')))))
+                     )),
+    # ===== TAB BASES DE DATOS =====
+    tabItem(tabName = 'bd' ,
+            fluidRow(column(6 , actionButton(inputId = 'boton_ver_visualizador3' , label = 'Regresar a Visualizador' , icon = icon('globe-americas') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'))),
+            tags$div(style = 'height: 20px;'),
+            box(width = 12,
+                tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                         tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                         tags$p('A continuación, encontrará información detallada sobre las Bases de Datos utilizadas en esta aplicación, a modo de conocer más a fondo su función original en el organismo generador y su utilidad para los objetivos de la SEMOVI.')),
+                tabsetPanel(tabPanel(title = 'PGJ',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$p(tags$img(src = 'fgj.png' , style = 'height: 85px; float: right;'),
+                                                                     strong('Fiscalía General de Justicia (FGJ)'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('A través del Ministerio Público, tiene las atribuciones de investigar los delitos de orden común, y perseguir a los imputados. Promoviendo la pronta, expedita y debida procuración de Justicia. '),
+                                                                      tags$li('Esta fuente recaba una gran parte de información que se complementa en el lugar de investigación como cada uno de los campos pertenecientes a su base de datos.'),
+                                                                      tags$li('Esta fuente se considera fundamental debido a que un accidente vial puede resultar en la comisión de delitos como daños, lesiones o incluso homicidio (no intencional). Por lo cual le corresponderá a la FGJ tomar la investigación y con ello la recopilación de información.'),
+                                                                      tags$li('Para lo anterior, el Ministerio Público quien coordina la investigación, recaba información de las entrevistas a víctimas o imputados, las policías o bien de los peritos.')),
+                                                              tags$p(style = 'font-size: 10pt;',
+                                                                     strong('Referencia') , ' – ' , tags$a('Ley Orgánica de la Procuraduría General de Justicia del Distrito Federal' , href = 'http://data.consejeria.cdmx.gob.mx/images/leyes/leyes/LEY_ORGANICA_DE_LA_PROCURADURIA_GRAL_DE_JUSTICIA_DEL_DF_1.pdf'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/carpetas-de-investigacion-pgj-de-la-ciudad-de-mexico/')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'pgj_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'pgj_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'pgj_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;')
+                                                     # tags$p(strong('Base de Datos Remota'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     # tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                     #          tags$p('"Local" trabaja con una versión almacenada en la aplicación; "Remota" utiliza la Base de Datos más reciente disponible en línea.'),
+                                                     #          radioButtons(inputId = 'bd_pgj' , label = NULL, inline = TRUE,
+                                                     #                       choiceNames = c('Local' , 'Remota'),
+                                                     #                       choiceValues = c('A' , 'B')))
+                                                     ),
+                                              column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     # ===== Tabla PGJ =====
+                                                     tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                                tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                                                tags$tr(class = 'diccionario dicc_header' ,
+                                                                        tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                                                tags$tr(tags$td('ao_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Año en que ocurrió el hecho', class = 'diccionario'),
+                                                                        tags$td('Entero', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('mes_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Mes en el que ocurrió el hecho', class = 'diccionario'),
+                                                                        tags$td('Texto', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('fecha_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Día, mes, año y hora en el que ocurrió el hecho', class = 'diccionario'),
+                                                                        tags$td('Texto, en formato “aaaa-mm-dd hh:mm” (24 hrs)', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('ao_inicio', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Año en el cual se abrió la carpeta de investigación', class = 'diccionario'),
+                                                                        tags$td('Entero', class = 'diccionario')),
+                                                                tags$tr(tags$td('mes_inicio', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Mes en el cual se abrió la carpeta de investigación', class = 'diccionario'),
+                                                                        tags$td('Texto', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('fecha_inicio' , class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Día, mes, año y hora en el cual se abrió la carpeta de investigación', class = 'diccionario'),
+                                                                        tags$td('Texto, en formato “aaaa-mm-dd hh:mm” (24 hrs)', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('delito', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Tipo penal con base en Código Penal de la CDMX' , class = 'diccionario'),
+                                                                        tags$td('8 Tipos Penales (', tags$span(id = 'bd_delitos-pgj' , tags$u('Ver') , style = 'color: #00AA5A;'), ')' , class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('fiscalia', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Entidad pública encargada de la investigación' , class = 'diccionario'),
+                                                                        tags$td('24 fiscalías' , class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('agencia' , class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Clave de la agencia encargada de la investigación' , class = 'diccionario'),
+                                                                        tags$td('89 agencias' , class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('unidad_investigacion' , class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Clave con unidad de investigación detallando si existieron detenidos' , class = 'diccionario'),
+                                                                        tags$td('20 claves' , class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('categoria_delito' , class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Categoría del delito con base en Código Penal de la CDMX' , class = 'diccionario'),
+                                                                        tags$td('1 categoría (Delito de Bajo Impacto)' , class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('calle_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Nombre de la calle del hecho', class = 'diccionario'),
+                                                                        tags$td('12,336 calles', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('calle_hechos2', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Segunda referencia al lugar donde ocurrieron los hechos', class = 'diccionario'),
+                                                                        tags$td('8,581 calles', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('colonia_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Nombre de la colonia del hecho', class = 'diccionario'),
+                                                                        tags$td('1,370 colonias', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('alcaldia_hechos', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Nombre de la alcaldia del hecho', class = 'diccionario'),
+                                                                        tags$td('16 alcaldías', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('longitud', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Coordenada X', class = 'diccionario'),
+                                                                        tags$td('Numérico', class = 'diccionario'),
+                                                                        class = 'diccionario'),
+                                                                tags$tr(tags$td('latitud', class = 'diccionario dicc_center dicc_rndm'),
+                                                                        tags$td('Coordenada Y', class = 'diccionario'),
+                                                                        tags$td('Numérico', class = 'diccionario'),
+                                                                        class = 'diccionario')
+                                                                )
+                                                     # =====
+                                                     ))),
+                            tabPanel(title = 'SSC',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$p(tags$img(src = 'ssc.png' , style = 'height: 85px; float: right;'),
+                                                                     strong('Secretaría de Seguridad Ciudadana (SSC)'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('Sus atribuciones en la Ciudad de México, encaminan las acciones dirigidas a salvaguardar la integridad y patrimonio de las personas, prevenir la comisión de delitos e infracciones a las disposiciones gubernativas y de policía, así como a preservar las libertades, el orden y la paz públicos.'),
+                                                                      tags$li('La información que tiene la SSC está en función a la atención que se brinda a través de la policía, por lo cual pueden allegarse de información que sólamente es posible recuperar cuando el incidente vial es atendido en campo.'),
+                                                                      tags$li('En la cadena de operaciones, son el primer contacto físico con la ciudadanía que se encuentre involucrada en un accidente vial, por lo cual tienen la facilidad de recabar información casi al momento del evento.'),
+                                                                      tags$li('A través de esta atención que brindan, los policías, obtienen información del accidente, la cual se pasa a través de formatos homologados a las áreas correspondientes de captura.')),
+                                                              tags$p(style = 'font-size: 10pt;',
+                                                                     strong('Referencia') , ' – ' , tags$a('Ley Orgánica de la Secretaría de Seguridad Pública del Distrito Federal' , href = 'http://data.consejeria.cdmx.gob.mx/images/leyes/leyes/LEY_ORGANICA_DE_LA_SECRETARIA_DE_SEGURIDAD_PUBLICA_DEL_DF_1.pdf'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/hechos-de-transito-registrados-por-la-ssc-serie-para-comparaciones-interanuales-')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'ssc_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'ssc_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'ssc_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;')
+                                     ),
+                                     column(6,
+                                            tags$div(style = 'height: 15px;'),
+                                            tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                            # ===== Tabla SSC =====
+                                            tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                       tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                                       tags$tr(class = 'diccionario dicc_header' ,
+                                                               tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                                       tags$tr(tags$td('no_folio', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Número de folio único asignado a cada registro', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fecha_evento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Fecha en la cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto en formato "aa-mm-dd"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('año_evento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Año en el cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('mes_evento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Mes en el cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('12 meses', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hora_evento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hora en la cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto en formato "hh:mm"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('condicion', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Detalla si la víctima principal resultó lesionada o falleció en el incidente', class = 'diccionario'),
+                                                               tags$td('Texto (Lesionado y Occiso)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo_evento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción del tipo de incidente vial ocurrido', class = 'diccionario'),
+                                                               tags$td('6 Tipos de Eventos (', tags$span(id = 'bd_evento-ssc' , tags$u('Ver') , style = 'color: #00AA5A;'), ')' , class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('coordenada_x', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Longitud del incidente', class = 'diccionario'),
+                                                               tags$td('Numérico', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('coordenada_y', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Latitud del incidente', class = 'diccionario'),
+                                                               tags$td('Numérico', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('punto_1', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Calle de referencia en la cual ocurrió el incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('punto_2', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Calle secundaria de referencia en la cual ocurrió el incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('colonia', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Colonia dentro de la cual ocurrió el incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('alcaldia', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Alcaldía dentro de la cual ocurrió el incidente', class = 'diccionario'),
+                                                               tags$td('16 Alcaldías', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo_interseccion', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Intersección sobre la cual ocurrió el incidente', class = 'diccionario'),
+                                                               tags$td('Texto (Cruz, Curva, Desnivel, Gaza, Glorieta, Ramas Múltiples, Recta, T o Y)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo_vehiculo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción de los vehículos involucrados en el incidente. Cada uno se encuentra descrito en columnas diferentes', class = 'diccionario'),
+                                                               tags$td('15 Tipos de Vehículos (', tags$span(id = 'bd_vehiculo-ssc' , tags$u('Ver') , style = 'color: #00AA5A;'), ')' , class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('marca_vehiculo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Marca de los vehículos involucrados en el incidente. Cada marca se encuentra descrita en columnas diferentes', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('lesiones', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción detallada de las lesiones sufridas por la víctima principal del incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('Edades de Occisos / Lesionados', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Conjunto de columnas que describen las edades', class = 'diccionario'),
+                                                               tags$td('15 Tipos de Vehículos (', tags$span(id = 'bd_vehiculo-ssc' , tags$u('Ver') , style = 'color: #00AA5A;'), ')' , class = 'diccionario'),
+                                                               class = 'diccionario')
+                                            )
+                                            # =====
+                                     ))),
+                            tabPanel(title = 'C5',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$p(tags$img(src = 'c5.png' , style = 'height: 85px; float: right;'),
+                                                                     strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México (C5)'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('Entre las atribuciones que tiene son las de proveer información a la Jefa de Gobierno para la oportuna e inmediata toma de decisiones, a través de video monitoreo de la ciudad, la administración del Servicio de Atención de llamadas de emergencia 9-1-1 CDMX, así como Denuncia Anónima 089 y LOCATEL.'),
+                                                                      tags$li('La información que se tiene corresponde a los reportes hechos por la ciudadanía directamente, por lo cual la información que puede ser pública es la fecha y hora, ubicación, la clasificación interna que se realiza. Existe una alta probabilidad de que esta institución tenga más reportes que las otras, debido a que algunos de estos, no tienen continuidad ante la policía o la PGJ, claro está, cuando no hay personas fallecidas o lesionadas.'),
+                                                                      tags$li('La integración de C5, ayuda a reducir la brecha de reportes, ya que suele ser el primer contacto no físico con alguna autoridad ante un accidente vial.'),
+                                                                      tags$li('Para ello, las y los operadores de C5 toman la información directa de la ciudadanía y realizan una clasificación de los eventos.')),
+                                                              tags$p(style = 'font-size: 10pt;',
+                                                                     strong('Referencia') , ' – ' , tags$a('Manual Administrativo del C5' , href = 'https://www.c5.cdmx.gob.mx/storage/app/uploads/public/5be/b2e/318/5beb2e31874de742733714.pdf'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/incidentes-viales-c5')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'c5_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'c5_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'c5_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;')
+                                     ),
+                                     column(6,
+                                            tags$div(style = 'height: 15px;'),
+                                            tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                            # ===== Tabla C5 =====
+                                            tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                       tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                                       tags$tr(class = 'diccionario dicc_header' ,
+                                                               tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                                       tags$tr(tags$td('folio', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Código único alfa numérico que se la asigna a cada uno de los incidentes, compuesto por dos iniciales del Centro que recibió la emergencia, fecha en formato AA/MM/DD y número consecutivo de ingreso', class = 'diccionario'),
+                                                               tags$td('Texto Alfanumérico Variable', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fecha_creacion', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Fecha de apertura del folio del evento', class = 'diccionario'),
+                                                               tags$td('Fecha en formato "aaaa-mm-dd"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hora_creacion', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hora de apertura del folio del evento', class = 'diccionario'),
+                                                               tags$td('Hora en formato "hh:mm:ss"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('dia_semana', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Día de apertura del folio', class = 'diccionario'),
+                                                               tags$td('7 días', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fecha_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Fecha de cierre del folio del evento', class = 'diccionario'),
+                                                               tags$td('Fecha en formato "aaaa-mm-dd"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('año_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Año de cierre del folio del evento', class = 'diccionario'),
+                                                               tags$td('Número Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('mes_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Mes de cierre del folio del evento', class = 'diccionario'),
+                                                               tags$td('12 meses', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hora_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hora de cierre del folio del evento', class = 'diccionario'),
+                                                               tags$td('Hora en formato "hh:mm:ss"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('delegacion_inicio', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Alcaldía donde inicialmente se reportó el incidente', class = 'diccionario'),
+                                                               tags$td('16 alcaldías', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('incidente_c4', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Tipo de incidente', class = 'diccionario'),
+                                                               tags$td('21 Incidentes Posibles (', tags$span(id = 'bd_incidentes-c5' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('latitud', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Coordenada Y', class = 'diccionario'),
+                                                               tags$td('Numérico', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('longitud', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Coordenada X', class = 'diccionario'),
+                                                               tags$td('Numérico', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('codigo_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Código que fue asignado al incidente en el cierre', class = 'diccionario'),
+                                                               tags$td('Texto, 2 Categorías (', tags$span(id = 'bd_cierre-c5' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('clas_con_f_alarma', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Clasificación del Incidente', class = 'diccionario'),
+                                                               tags$td('Texto, 4 Categorías (', tags$span(id = 'bd_clas-c5' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo_entrada', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Medio por el cual se dio aviso del incidente', class = 'diccionario'),
+                                                               tags$td('Texto, 6 Categorías (', tags$span(id = 'bd_entrada-c5' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('delegacion_cierre', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Alcaldía donde cierra el folio del incidente', class = 'diccionario'),
+                                                               tags$td('16 alcaldías', class = 'diccionario'),
+                                                               class = 'diccionario')
+                                            )
+                                            # =====
+                                     ))),
+                            tabPanel(title = 'AXA',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$p(tags$img(src = 'axa.png' , style = 'height: 85px; float: right;'),
+                                                                     strong('AXA México'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('Es una aseguradora multirramo de origen francés con presencia en 64 países'),
+                                                                      tags$li('Esta fuente, contiene información referente a sus clientes asegurados, sobre los datos generales, así como un desglose sobre causas y entorno que intervino en el accidente'),
+                                                                      tags$li('A través de “Fundación Axa” se suman generando un convenio de colaboración para la integración de su información, cuidando como siempre, la protección de datos personales de sus clientes'),
+                                                                      tags$li('El personal que atiende a sus asegurados, se recopila la información la cual es capturada en un sistema de registro'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Instituto Internacional de Ciencia de Datos' , href = 'http://i2ds.org/datos-abiertos-percances-viales/')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'axa_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'axa_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'axa_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;')
+                                     ),
+                                     column(6,
+                                            tags$div(style = 'height: 15px;'),
+                                            tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                            # ===== Tabla AXA =====
+                                            tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                       tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                                       tags$tr(class = 'diccionario dicc_header' ,
+                                                               tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                                       tags$tr(tags$td('siniestro', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Identificador único del percance vial', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('calle', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Nombre de la calle donde ocurrió el siniestro', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('colonia', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Nombre de la colonia donde ocurrió el siniestro', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('codigo_postal', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Ubicación postal del percance vial', class = 'diccionario'),
+                                                               tags$td('Texto (Número Entero que puede iniciar con cero)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('alcaldia', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Nombre de la alcaldia donde ocurrió el siniestro', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('causa_siniestro', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción del tipo de percance ocurrido', class = 'diccionario'),
+                                                               tags$td('7 Causas Posibles (', tags$span(id = 'bd_siniestro-axa' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo_vehiculo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Vehículo involucrado en el percance vial', class = 'diccionario'),
+                                                               tags$td('4 Vehículos Posibles (', tags$span(id = 'bd_vehiculo-axa' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('color', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Color del vehículo asegurado', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('modelo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Año del vehículo asegurado', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('nivel_dano_vehiculo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Grado de daño al vehículo en el percance vial', class = 'diccionario'),
+                                                               tags$td('Texto (Alto, Medio, Bajo y Sin Daños)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('punto_impacto', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Parte del vehículo donde ocurrió el daño', class = 'diccionario'),
+                                                               tags$td('Texto (Frontal, Trasero, Lateral Derecho o Lateral Izquierdo)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('ao', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Año en que se registró el percance vial. No necesariamente corresponde al año de ocurrencia', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('mes', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Mes en que registró el percance vial. No necesariamente corresponde al mes de ocurrencia', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('dia_numero', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Día en que registró el percance. No necesariamente correpsonde al día de ocurrencia', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('dia', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Día de la semana en la que se registró el percance', class = 'diccionario'),
+                                                               tags$td('7 días de la semana', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hora', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hora de ocurrencia del percance vial. No necesariamente correpsonde a la hora de ocurrencia', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('lesionados', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Cantidad de personas lesionadas en el siniestro', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('edad_lesionado', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Corresponde a la edad de cada lesionado', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('relacion_lesionados', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Rol que posee el lesionado del percance, especificando si es asegurado o no', class = 'diccionario'),
+                                                               tags$td('6 Roles Posibles (', tags$span(id = 'bd_rol-axa' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('genero_lesionado', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Corresponde al género de cada lesionado', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('nivel_lesionado', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Grado de la lesión sufrida', class = 'diccionario'),
+                                                               tags$td('Texto (Alto, Medio, Bajo y Sin Lesión)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hospitalizado', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Confirma si cada lesionado fue o no hospitalizado', class = 'diccionario'),
+                                                               tags$td('Booleano', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fallecido', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Confirma si cada lesionado falleció o no en el siniestro', class = 'diccionario'),
+                                                               tags$td('Booleano', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('Variables Booleanas', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Conjunto de datos que describren a detalle las variables involucradas en el incidente', class = 'diccionario'),
+                                                               tags$td('18 Variables (', tags$span(id = 'bd_boolean-axa' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario')
+                                            )
+                                            # =====
+                                     ))),
+                            tabPanel(title = 'Repubikla',
+                                     fluidRow(column(6,
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$div(style = 'font-size: 18pt; color: #848888; text-align: left;',
+                                                              tags$p(tags$img(src = 'repubikla2.png' , style = 'height: 85px; float: right;'),
+                                                                     strong('Repubikla'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Objetivo de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li('Repubikla es una plataforma de mapeo alimentada por ciudadanos que con una estrategia de crowdsourcing busca generar y centralizar datos sobre la movilidad no motorizada en las ciudades.'),
+                                                                      tags$li('Esta fuente cuenta con información general sobre los eventos, con un enfoque ciudadano.'),
+                                                                      tags$li('De esta forma, se fomenta el empoderamiento de la ciudadanía los procesos de gobernanza, y la plena participación en la generación de recursos para la toma de decisiones.'))),
+                                                     tags$div(style = 'height: 15px;'),
+                                                     tags$p(strong('Información de la Base de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                                     tags$div(style = 'text-align: justify; font-size: 12pt; color: #697070;',
+                                                              tags$ul(tags$li(strong('Fuente') , ' – ' , tags$a('Página Oficial Repubikla' , href = 'https://repubikla.herokuapp.com/')),
+                                                                      tags$li(strong('Número de Registros') , ' – ' , textOutput(outputId = 'repubikla_cuantos' , inline = TRUE)),
+                                                                      tags$li(strong('Periodo Temporal') , ' – ' , textOutput(outputId = 'repubikla_cuando1' , inline = TRUE), ' a ' , textOutput(outputId = 'repubikla_cuando2' , inline = TRUE)))),
+                                                     tags$div(style = 'height: 15px;')
+                                     ),
+                                     column(6,
+                                            tags$div(style = 'height: 15px;'),
+                                            tags$p(strong('Diccionario de Datos'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                                            # ===== Tabla Repubikla =====
+                                            tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                                       tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                                       tags$tr(class = 'diccionario dicc_header' ,
+                                                               tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                                       tags$tr(tags$td('id', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Identificador único del reporte', class = 'diccionario'),
+                                                               tags$td('Entero', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('comentario', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Comentario a través del cual el incidente fue reportado. Puede provenir del título de una noticia, contenido de un tweet, entre otros', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('tipo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Tipo de incidente registrado', class = 'diccionario'),
+                                                               tags$td('Texto (Incidente Vial)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fecha', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Fecha en la cual se realizó el reporte del incidente', class = 'diccionario'),
+                                                               tags$td('Texto en formato "dd/mm/aa"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('hora', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hora en la cual se realizó el reporte del incidente', class = 'diccionario'),
+                                                               tags$td('Texto en formato "hh:mm"', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('calle_1', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Referencia del lugar en el cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('calle_2', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Referencia complementaria del lugar en el cual ocurrió el incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('modo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción de la víctima principal del incidente', class = 'diccionario'),
+                                                               tags$td('5 Modos posibles (', tags$span(id = 'bd_modo-repubikla' , tags$u('Ver') , style = 'color: #00AA5A;') , ')', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('fuente', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Hipervínculo directo a la fuente de donde se obtuvo el registro del incidente (Twitter, Blog de Noticias, etc.)', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('responsable', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción detallada del vehículo o instrumento responsable del incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('gravedad', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción detallada del nivel de las lesiones sufridas por la víctima principal', class = 'diccionario'),
+                                                               tags$td('Texto (Leve, Moderada, Grave, Ambulancia Requerida y Mortal)', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('victima_sexo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Sexo de la víctima principal del incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('victima_edad', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Edad de la víctima principal del incidente', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('seguimiento', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción detallada de los suscesos ocurridos posterior al incidente.', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('placa', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Placa del vehículo respondable del incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('vehiculo', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Descripción más detallada del vehículo responsable del incidente vial', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario'),
+                                                       tags$tr(tags$td('condicion', class = 'diccionario dicc_center dicc_rndm'),
+                                                               tags$td('Detalla si el responsable se encontraba en estado de ebriedad o no', class = 'diccionario'),
+                                                               tags$td('Texto', class = 'diccionario'),
+                                                               class = 'diccionario')
+                                            )
+                                            # =====
+                                     ))))
+                )
+            ),
     # ===== TAB INSTRUCCIONES =====
     tabItem(tabName = 'instrucciones',
             # ===== CUADRO INSTRUCCIONES =====
@@ -158,108 +736,7 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                                 # tags$div('Placeholder' , style = 'background-color: #848888; height: 350px;')
                                 ))),
             # ===== CUADRO BD =====
-            box(width = 6,
-                tags$p(strong('Bases de Datos'), style = 'font-size: 18pt; color: #848888;'),
-                tags$div(style = 'background-color: white; width: 100%; height: 305px;',
-                         navlistPanel(id = 'menu_bd' , selected = 'PGJ', well = FALSE , widths = c(2 , 10) ,
-                                      tabPanel(title = 'PGJ',
-                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                        tags$p(tags$strong('Procuraduría General de Justicia'),
-                                                               tags$img(src = 'pgj.png',
-                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                               style = 'font-size: 18pt;'),
-                                                        tags$p('Carpetas de investigación de delitos a nivel de calle de la Procuraduría General de Justicia de la Ciudad de México, actualizados mensualmente con registros desde enero de 2016.',
-                                                               style = 'text-align: justify;'),
-                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                        selectInput(inputId = 'campos_pgj' , label = NULL , 
-                                                                                    choices = c('Delito' , 'Fiscalía' , 'Agencia' , 'U. Investigación' , 'Fecha de Hechos' , 'Fecha de Inicio'))),
-                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_pgj'),
-                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/carpetas-de-investigacion-pgj-de-la-ciudad-de-mexico/'))),
-                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Enero 2016 a Septiembre 2019*'))),
-                                                        fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
-                                                                 column(8 , radioButtons(inputId = 'bd_pgj' , label = NULL, inline = TRUE,
-                                                                                         choiceNames = c('Local' , 'Remota'),
-                                                                                         choiceValues = c('A' , 'B')))),
-                                                        tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
-                                                                                                style = 'font-size: 9pt;'))
-                                                        
-                                               )),
-                                      tabPanel(title = 'SSC',
-                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                        tags$p(tags$strong('Secretaría de Seguridad Ciudadana'),
-                                                               tags$img(src = 'ssc.png',
-                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                               style = 'font-size: 18pt;'),
-                                                        tags$p('Reportes de incidentes viales realizados por policías respondientes. Sólo se cuentan con datos de Enero 2018 a Abril 2019, dado que son la única versión pública disponible.',
-                                                               style = 'text-align: justify;'),
-                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                        selectInput(inputId = 'campos_ssc' , label = NULL , 
-                                                                                    choices = c('Tipo de Evento' , 'Intersección' , 'Cuadrante' , 'Vehículo' , 'Ruta T. Público' , 'Condición' , 'Total Occisos' , 'Identidad' , 'U. M. de Apoyo' , 'Observaciones'))),
-                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_ssc'),
-                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify;  word-wrap: break-word;'))),
-                                                        fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Secretaría de Seguridad Ciudadana de la CDMX' , href = 'https://www.ssc.cdmx.gob.mx/'))),
-                                                                 column(5 , tags$p(strong('Temporalidad'), ' – Enero 2018 a Abril 2019')))
-                                                        
-                                               )),
-                                      tabPanel(title = 'C5',
-                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                        tags$p(tags$strong('Centro de Comando, Control, Cómputo, Comunicaciones y Contacto Ciudadano de la Ciudad de México'),
-                                                               tags$img(src = 'c5.png',
-                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                               style = 'font-size: 16pt;'),
-                                                        tags$p('Incidentes viales reportados por el C5 desde Ene/2014, actualizado mensualmente. Sólo se consideran aquellos clasificados como reales por los códigos internos del centro.',
-                                                               style = 'text-align: justify;'),
-                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                        selectInput(inputId = 'campos_c5' , label = NULL , 
-                                                                                    choices = c('Folio' , 'Fecha Creación' , 'Incidente C4' , 'Código de Cierre' , 'C. con F. Alarma' , 'Tipo de Entrada'))),
-                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_c5'),
-                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Datos Abiertos de la CDMX' , href = 'https://datos.cdmx.gob.mx/explore/dataset/incidentes-viales-c5'))),
-                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Enero 2014 a Septiembre 2019*'))),
-                                                        fluidRow(column(4, tags$strong('Uso de la Base de Datos')),
-                                                                 column(8 , radioButtons(inputId = 'bd_c5' , label = NULL, inline = TRUE,
-                                                                                         choiceNames = c('Local' , 'Remota'),
-                                                                                         choiceValues = c('A' , 'B')))),
-                                                        tags$div(style = 'width: 100%;  padding-bottom: 1%;', tags$p('* Para Base de Datos Local. Versión "Remota" utiliza la base más reciente disponible en "Datos Abiertos CDMX".',
-                                                                                                                     style = 'font-size: 9pt;'))
-                                                        
-                                               )),
-                                      tabPanel(title = 'AXA',
-                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                        tags$p(tags$strong('AXA Seguros'),
-                                                               tags$img(src = 'axa.png',
-                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                               style = 'font-size: 18pt;'),
-                                                        tags$p('Datos de percances viales pertenecientes a AXA Seguros, pero aperturados y entregados a la comunidad mediante el Instituto Internacional de Ciencia de Datos.',
-                                                               style = 'text-align: justify;'),
-                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                        selectInput(inputId = 'campos_axa' , label = NULL , 
-                                                                                    choices = c('Siniestro' , 'Causa Siniestro' , 'Vehículo' , 'Nivel de Daño' , 'Punto Impacto' , 'Año de Reporte' , 'T. Lesionados' , 'Rol Lesionado' , 'Nivel de Lesión' , 'Fallecido' , 'Hospitalizado' , 'Var. Binarias'))),
-                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_axa'),
-                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                        fluidRow(column(7 , tags$p(tags$strong('Fuente'),' – ',tags$a('Instituto Internacional de Ciencia de Datos' , href = 'http://i2ds.org/datos-abiertos-percances-viales/'))),
-                                                                 column(5 , tags$p(strong('Temporalidad'), ' – Enero 2015 a Julio 2019')))
-                                                        
-                                               )),
-                                      tabPanel(title = 'Repubikla',
-                                               tags$div(style = 'background-color: #AFB1B1; width: 100%; border-radius: 10px; padding: 10px 10px 0px; font-size: 90%;',
-                                                        tags$p(tags$strong('Repubikla'),
-                                                               tags$img(src = 'repubikla2.png',
-                                                                        style = 'height: 85px; float: right; overflow: auto; padding-left: 5px;'),
-                                                               style = 'font-size: 18pt;'),
-                                                        tags$p('Plataforma de mapeo alimentada por ciudadanos que, a través del crowdsourcing, busca generar y centralizar datos sobre movilidad no motorizada.',
-                                                               style = 'text-align: justify;'),
-                                                        fluidRow(column(3 , tags$strong('Campos Importantes'),
-                                                                        selectInput(inputId = 'campos_repubikla' , label = NULL , 
-                                                                                    choices = c('Comentario' , 'Modo' , 'Fuente' , 'Responsable' , 'Gravedad' , 'Seguimiento'))),
-                                                                 column(9 , tags$div(textOutput(outputId = 'texto_campos_repubikla'),
-                                                                                     style = 'background-color: #C0C0C0; width: 100%; border-radius: 9px; padding: 5px 10px; font-size: 9pt; text-align: justify; word-wrap: break-word;'))),
-                                                        fluidRow(column(6 , tags$p(tags$strong('Fuente'),' – ',tags$a('Portal Oficial de Repubikla' , href = 'https://repubikla.herokuapp.com/'))),
-                                                                 column(6 , tags$p(strong('Temporalidad'), ' – Diciembre 2017 a Marzo 2019')))
-                                                        
-                                               )))
-                )),
+            
             # ===== CUADROS EXTRAS =====
             tags$p(strong('Cifras Importantes de la Base ', textOutput(outputId = 'texto_rndm' , inline = TRUE)), style = 'font-size: 18pt; color: #848888;'),
             fluidRow(valueBoxOutput(outputId = 'extra1', width = 6),
@@ -267,8 +744,30 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
                      valueBoxOutput(outputId = 'extra3', width = 2),
                      valueBoxOutput(outputId = 'extra4', width = 2))
             ),
-    # ===== TAB DATOS =====
+    # ===== TAB VISUALIZADOR =====
     tabItem(tabName = 'visualizador',
+            tags$div(style = 'text-align: left;',
+                     fluidRow(column(6 , actionButton(inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'),
+                                     actionButton(inputId = 'boton_ver_bd2' , label = 'Descripción de Bases de Datos' , icon = icon('layer-group') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'),
+                                     actionButton(inputId = 'boton_ver_integracion2' , label = 'Información sobre Herramienta de Integración' , icon = icon('info-circle') , style = 'background-color: #00AA5A; color: white; border-color: ; font-size: 12pt;'))
+                              )),
+            tags$div(id = 'berenjena', style = 'display: none; text-align: center;' ,
+                     tags$div(style = 'height: 20px;'),
+                     box(width = 12 ,
+                         fluidRow(column(5 ,
+                                         fluidRow(column(2 , actionButton(inputId = 'l_instrucciones' , label = '' , icon = icon('angle-left'))),
+                                                  column(8 , tags$p(textOutput(outputId = 'pagina_instrucciones' , inline = TRUE) , '/ 8')),
+                                                  column(2 , actionButton(inputId = 'r_instrucciones' , label = '' , icon = icon('angle-right')))),
+                                         tags$div(style = 'height: 20px;'),
+                                         tags$p(strong(textOutput(outputId = 'titulo_instrucciones' , inline = TRUE)), style = 'font-size: 18pt; color: #848888; text-align: left;'),
+                                         tags$p(htmlOutput(outputId = 'desc_instrucciones' , inline = TRUE) , style = 'text-align: justify; font-size: 12pt; color: #697070;'),
+                                         tags$div(style = 'display: none;',
+                                                  numericInput(inputId = 'no_instrucciones' , label = NULL , value = 1 , min = 1 , max = 8))),
+                                  column(7 ,
+                                         tags$img(src = 'tmp.png' , style = 'width: 100%;'))
+                                  
+                                  ))),
+            tags$div(style = 'height: 20px;'),
             fluidRow(column(6 , withSpinner(leafletOutput(outputId = 'mapa', height = '756px'),
                                             type = 3 , color = '#00A65A' , size = 2, color.background = '#ecf0f5'),
                             tags$div(style = 'width: 100%; height: 20px; background-color: white; opacity: 0;'),
@@ -334,6 +833,8 @@ ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI
 # ===== SERVIDOR =====
 
 server <- function(input, output, session) {
+  addClass(selector = "body", class = "sidebar-collapse")
+  
   # ===== REACTIVE VARIABLES =====
   bd <- reactiveValues(tmp_pgj = NULL , tmp_ssc = NULL , tmp_c5 = NULL , tmp_axa = NULL , tmp_repubikla = NULL , df_referencia = NULL)
   # =
@@ -348,6 +849,13 @@ server <- function(input, output, session) {
   # =
   filtro_fecha_sp <- reactive(input$filtro_fecha) %>% debounce(1500)
   filtro_bd_sp <- reactive(input$filtro_bd) %>% debounce(1000)
+  
+  # ===== VENTANA INTRODUCCIÓN =====
+  observeEvent(input$boton_ver_visualizador , updateTabItems(session , inputId = 'menu_1' , selected = 'visualizador'))
+  
+  observeEvent(input$boton_ver_bd , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
+  
+  observeEvent(input$boton_ver_integracion , updateTabItems(session , inputId = 'menu_1' , selected = 'instrucciones'))
   
   # ===== BASES DE DATOS REMOTAS - PGJ =====
   observeEvent(input$bd_pgj , {
@@ -506,113 +1014,264 @@ server <- function(input, output, session) {
   
   
   # ===== DESCRIPTORES DE VARIABLES =====
-  # = Campos PGJ
-  output$texto_campos_pgj <- renderText({
-    if (input$campos_pgj == 'Delito') {
-      'Para incidentes viales, las posibilidades son: "Daño en Propiedad Ajena Culposa por Tránsito Vehicular", "Lesiones Culposas por Tránsito Vehicular" u "Homicidio Culposo por Tránsito Vehicular"'
-    } else if (input$campos_pgj == 'Fiscalía') {
-      'Establece si la Carpeta de Investigación fue abierta dentro de una Alcaldía (e.g. Benito Juárez) o por alguna entidad especializada (e.g. Agencia Central de Investigación).'
-    } else if (input$campos_pgj == 'Agencia') {
-      'Código de la Agencia específica en la cual fue abierta la Carpeta de Investigación (e.g. "BJ-3" para la Coordinación Territorial 3 de la Alcaldía Benito Juárez)'
-    } else if (input$campos_pgj == 'U. Investigación') {
-      'Ayuda a determinar si existieron o no detenidos dentro de la Carpeta de Investigación.'
-    } else if (input$campos_pgj == 'Fecha de Hechos') {
-      'Deterimina el día, mes, año y hora en la cual se llevó a cabo el delito reportado, de acuerdo con la información recabada por la Procuraduría'
-    } else if (input$campos_pgj == 'Fecha de Inicio') {
-      'Establece el día, mes, año y hora en la cual se inició la Carpeta de Investigación, esto en, en que se recibió la denuncia. No necesariamente corresponde con la fecha en la que ocurrió el delito.'
-    }
+  observeEvent(input$boton_ver_visualizador3 , updateTabItems(session , inputId = 'menu_1' , selected = 'visualizador'))
+  
+  output$pgj_cuantos <- renderText(format(nrow(special_bd$active_pgj) , big.mark = ','))
+  output$pgj_cuando1 <- renderText(str_to_title(format(range(special_bd$active_pgj$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$pgj_cuando2 <- renderText(str_to_title(format(range(special_bd$active_pgj$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
+  
+  onclick(id = 'bd_delitos-pgj' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Tipos Penales registrados por PGJ'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Daño en Propiedad Ajena Culposa por Tránsito Vehicular a Automóvil'),
+                                  tags$li('Daño en Propiedad Ajena Culposa por Tránsito Vehicular a Bienes Inmuebles'),
+                                  tags$li('Lesiones Culposas por Tránsito Vehicular'),
+                                  tags$li('Homicidio Culposo por Tránsito Vehicular'),
+                                  tags$li('Homicidio Culposo por Tránsito Vehicular (Colisión)'),
+                                  tags$li('Homicidio Culposo por Tránsito Vehicular (Atropellado)'),
+                                  tags$li('Homicidio Culposo por Tránsito Vehicular (Caída)'))
+                          ))
   })
   
-  # = Campos SSC
-  output$texto_campos_ssc <- renderText({
-    if (input$campos_ssc == 'Tipo de Evento') {
-      'Establece puntualmente el tipo de Incidente Vial ocurrido. Las variantes son: "Atropellado", "Caída de Ciclista", "Caída de Pasajero", "Choque", "Derrapado" y "Volcadura"'
-    } else if (input$campos_ssc == 'Intersección') {
-      'Describe el tipo de cruce vial en el cual se llevó a cabo el incidente, pudiendo ser: "Cruz", "Curva", "Desnivel", "Gaza", "Glorieta", "Ramas Múltiples", "Recta", "T", y "Y"'
-    } else if (input$campos_ssc == 'Cuadrante') {
-      'Contiene el código del cuadrante dentro del cual ocurrió el incidente, de acuerdo a la "Estrategia de Proximidad de Cuadrantes" de la SSC'
-    } else if (input$campos_ssc == 'Vehículo') {
-      'Detalla el o los tipos de vehículos involucrados en el incidente vial. En caso de ser más de uno, cada afectado es asignado a una de cuatro columnas posibles dentro de la base.'
-    } else if (input$campos_ssc == 'Ruta T. Público') {
-      'En caso de que uno de los involucrados fuese un vehículo de Transporte Público, ya sea concesionado o no, la ruta a la que pertenece se detalla en esta columna.'
-    } else if (input$campos_ssc == 'Condición') {
-      'Establece si el afectado principal del incidente falleció durante el mismo ("Occiso") se encuentra lesionado ("Lesionado"). Únicamente a uno de los afectados, en caso de que existan más de uno.'
-    } else if (input$campos_ssc == 'Total Occisos') {
-      'Determina el número de individuos fallecidos durante el incidente vial, por lo que permite determinar si existió más de un afectado. También existe la columna "Total Lesionados" que cumple la misma función.'
-    } else if (input$campos_ssc == 'Identidad') {
-      'Aporta más detalles sobre el individuo detallado en la columna de "Condición", permitiendo conocer si pertenece a una de estas categorías: "Ciclista", "Conductor" , "Motociclista", "Pasajero" y "Peatón"'
-    } else if (input$campos_ssc == 'U. M. de Apoyo') {
-      'Si una Unidad Médica de apoyo acudió al lugar del incidente para atención de los involucrados, aquí se menciona la entidad pública o privada a la cual pertenece.'
-    } else if (input$campos_ssc == 'Observaciones') {
-      'Cualquier tipo de anotación adicional detallada por el personal policiaco presente en el incidente, y que no puede ser mencionado a detalle en alguna de las otras columnas.'
-    }
+  output$ssc_cuantos <- renderText(format(nrow(ssc) , big.mark = ','))
+  output$ssc_cuando1 <- renderText(str_to_title(format(range(ssc$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$ssc_cuando2 <- renderText(str_to_title(format(range(ssc$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
+  
+  onclick(id = 'bd_evento-ssc' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Tipos Penales registrados por PGJ'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Atropellado'),
+                                  tags$li('Caída de Ciclista'),
+                                  tags$li('Caída de Pasajero'),
+                                  tags$li('Choque'),
+                                  tags$li('Derrapado'),
+                                  tags$li('Volcadura'))
+    ))
+  })
+  onclick(id = 'bd_vehiculo-ssc' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Tipos Penales registrados por PGJ'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Autobús de Pasajeros'),
+                                  tags$li('Automóvil'),
+                                  tags$li('Bicicleta'),
+                                  tags$li('Camión de Carga'),
+                                  tags$li('Camioneta'),
+                                  tags$li('Ferrocarril'),
+                                  tags$li('Metrobús'),
+                                  tags$li('Microbús'),
+                                  tags$li('Motocicleta'),
+                                  tags$li('Objeto Fijo'),
+                                  tags$li('Taxi'),
+                                  tags$li('Tren'),
+                                  tags$li('Tren Ligero'),
+                                  tags$li('Tren Suburbano'),
+                                  tags$li('Trolebús'))
+    ))
   })
   
-  # = Campos C5
-  output$texto_campos_c5 <- renderText({
-    if (input$campos_c5 == 'Folio') {
-      'Folio de Identificación único asignado a cada uno de los registros de la base, sin importar su código de cierre ni el canal a través del cual fue reportado al C5.'
-    } else if (input$campos_c5 == 'Fecha Creación') {
-      'Momento del tiempo en el cual el incidente fue reportado al C5 por cualquiera de sus canales y, por ende, se le fue asignado un número de folio.'
-    } else if (input$campos_c5 == 'Fecha de Cierre') {
-      'Instante en el cual el personal del C5 dio cierre a un número de folio, considerándose el evento como atendido. No necesariamente corresponde con la Fecha de Creación.'
-    } else if (input$campos_c5 == 'Incidente C4') {
-      'Clasifiación interna del C5 para el incidente atendido. Puede pertenecer a las clases "Accidente", "Cadáver", "Detención Ciudadana" o "Lesionado", complementándose ésta con detalles del suceso.'
-    } else if (input$campos_c5 == 'Código de Cierre') {
-      'Describen las condiciones bajo las cuales un Número de Folio fue atendido. Para que un incidente se considere "Real", éste debe de ser "(A) Afirmativo" o "(I) Informativo", de acuerdo al propio centro.'
-    } else if (input$campos_c5 == 'C. con F. Alarma') {
-      'Asigna una clase que permite discernir si se trata de una Falsa Alarma. Puede tener los valores: "Delito", "Emergencia", "Falsa Alarma" o "Urgencias Médicas"'
-    } else if (input$campos_c5 == 'Tipo de Entrada') {
-      'Establece el canal a través del cual el C5 fue enterado del incidente. Las opciones son "Botón de Auxilio en Cámara", "Llamada en App del 911", "Llamada del 066", "Llamada del 911", "Radio", "Redes" y "Zello"'
-    }
+  output$c5_cuantos <- renderText(format(nrow(special_bd$active_c5) , big.mark = ','))
+  output$c5_cuando1 <- renderText(str_to_title(format(range(special_bd$active_c5$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$c5_cuando2 <- renderText(str_to_title(format(range(special_bd$active_c5$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
+  
+  onclick(id = 'bd_incidentes-c5' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Tipos de Incidentes Viales registrados por C5'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('accidente-choque con lesionados'),
+                                  tags$li('accidente-choque con prensados'),
+                                  tags$li('accidente-choque sin lesionados'),
+                                  tags$li('accidente-ciclista'),
+                                  tags$li('accidente-ferroviario'),
+                                  tags$li('accidente-monopatín'),
+                                  tags$li('accidente-motociclista'),
+                                  tags$li('accidente-otros'),
+                                  tags$li('accidente-persona atrapada/ desbarrancada'),
+                                  tags$li('accidente-vehiculo atrapado'),
+                                  tags$li('accidente-vehiculo atrapado-varado'),
+                                  tags$li('accidente-vehiculo desbarrancado'),
+                                  tags$li('accidente-volcadura'),
+                                  tags$li('cadáver-accidente automovilístico'),
+                                  tags$li('cadáver-atropellado'),
+                                  tags$li('detención ciudadana-accidente automovilístico'),
+                                  tags$li('detención ciudadana-atropellado'),
+                                  tags$li('lesionado-atropellado'),
+                                  tags$li('sismo-choque con lesionados'),
+                                  tags$li('sismo-choque con prensados'),
+                                  tags$li('sismo-choque sin lesionados'),
+                                  tags$li('sismo-persona atropellada'))
+    ))
+  })
+  onclick(id = 'bd_cierre-c5' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Códigos de Cierre para Incidentes Viales registrados por C5'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li(strong('Afirmativo (A)') , ' - La unidad de atención a emergencias fue despachada, llegó al lugar de los hechos y confirmó la emergencia reportada'),
+                                  tags$li(strong('Informativo (I)') , ' - El incidente reportado es afirmativo y se añade información adicional al evento'))
+    ))
+  })
+  onclick(id = 'bd_clas-c5' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Códigos de Cierre para Incidentes Viales registrados por C5'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Emergencia'),
+                                  tags$li('Urgencias Médicas'),
+                                  tags$li('Falsa Alarma'),
+                                  tags$li('Delito'))
+    ))
+  })
+  onclick(id = 'bd_entrada-c5' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Códigos de Cierre para Incidentes Viales registrados por C5'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Botón de Auxilio'),
+                                  tags$li('Cámara'),
+                                  tags$li('Llamada App 911'),
+                                  tags$li('Llamada del 911'),
+                                  tags$li('Radio'),
+                                  tags$li('Redes'))
+    ))
   })
   
-  # = Campos AXA
-  output$texto_campos_axa <- renderText({
-    if (input$campos_axa == 'Siniestro') {
-      'Identificador único asignado por AXA Seguros para cada uno de los percances viales registrados.'
-    } else if (input$campos_axa == 'Causa Siniestro') {
-      'Detalla lo sucedido durante el percance vial. Sus opciones son: "Atropello" , "Colisión y/o Vuelco", "Daños por la Carga", "Fenómenos de la Naturaleza", "Huelgas y Alborotos", "Incendio, Rayo o Explosión" y "Transportación".'
-    } else if (input$campos_axa == 'Vehículo') {
-      'Especifica el tipo de vehículo involucrado en el siniestro. Puede ser "Auto", "Camión", "Camión Ligero" o "Motocicleta".'
-    } else if (input$campos_axa == 'Nivel de Daño') {
-      'Indica cuál fue la gravedad de los daños sufridos por el vehículo especificado en la columna "Tipo de Vehículo". Los niveles son "Alto", "Medio", "Bajo" y "Sin Daño".'
-    } else if (input$campos_axa == 'Punto Impacto') {
-      'Describe la zona del vehículo en la cual se recibió el impacto principal durante el percance vial.'
-    } else if (input$campos_axa == 'Año de Reporte') {
-      'Año en el cual se registró el percance vial descrito. No necesariamente corresponde al momento en cual ocurrió éste; sin embargo, es el único campo de la base que especifica un momento del tiempo.'
-    } else if (input$campos_axa == 'T. Lesionados') {
-      'Especifica el número de individuos que resultaron lesionados por el percance vial, ya sea dentro o fuera del vehículo.'
-    } else if (input$campos_axa == 'Rol Lesionado') {
-      'Especifica la naturaleza del lesionado durante el percance vial ("Conductor", "Pasajero", "Peatón" o "Viajero"), así como si se encontraba asegurado por parte de AXA.'
-    } else if (input$campos_axa == 'Nivel de Lesión') {
-      'De forma similar a la columna "Nivel de Daño", coloca en una escala de "Alto", "Medio" y "Bajo" el nivel de la lesión sufrida por el individuo descrito en "Rol Lesionado."'
-    } else if (input$campos_axa == 'Fallecido') {
-      'Indica si el lesionado descrito en la columna "Rol Lesionado" falleció durante el percance vial.'
-    } else if (input$campos_axa == 'Hospitalizado') {
-      'Indica si el lesionado descrito en la columna "Rol Lesionado" fue trasladado a alguna Unidad Médica.'
-    } else if (input$campos_axa == 'Var. Binarias') {
-      'Describen si un factor participó en el percance. Éstas son "Ambulancia", "Árbol", "Piedra", "Dormido", "Grúa", "Daño Obra Civil", "Pavimento Mojado", "Explosión Llanta", "Volcadura", "Pérdida Total", entre otras.'
-    }
+  output$axa_cuantos <- renderText(format(nrow(axa) , big.mark = ','))
+  output$axa_cuando1 <- renderText(str_to_title(format(range(axa$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$axa_cuando2 <- renderText(str_to_title(format(range(axa$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
+  
+  onclick(id = 'bd_siniestro-axa' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Causas de Siniestros Viales registrados por AXA'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Atropello'),
+                                  tags$li('Colisión y/o Vuelco'),
+                                  tags$li('Daños por la Carga'),
+                                  tags$li('Fenómenos de la Naturaleza'),
+                                  tags$li('Huelgas y Alborotos'),
+                                  tags$li('Incendio, Rayo o Explosión'),
+                                  tags$li('Transportación'))
+    ))
+  })
+  onclick(id = 'bd_vehiculo-axa' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Tipo de Vehículos en Siniestros registrados por AXA'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Auto'),
+                                  tags$li('Camión'),
+                                  tags$li('Camión Ligero'),
+                                  tags$li('Motocicleta'))
+    ))
+  })
+  onclick(id = 'bd_rol-axa' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Rol de Lesionados en Siniestros registrados por AXA'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Conductor Asegurado'),
+                                  tags$li('Pasajero Asegurado'),
+                                  tags$li('Tercero Conductor'),
+                                  tags$li('Tercero Pasajero'),
+                                  tags$li('Tercero Peatón'),
+                                  tags$li('Tercero Viajero'))
+    ))
+  })
+  onclick(id = 'bd_boolean-axa' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE, size = 'l',
+                          tags$p(strong('Variables Booleanas manejadas por AXA'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$table(style = 'width: 100%; font-size: 10pt;' , class = 'diccionario',
+                                     tags$col(width = '17%'), tags$col(width = '58%'), tags$col(width = '25%'),
+                                     tags$tr(class = 'diccionario dicc_header' ,
+                                             tags$th('Nombre de la Variable', class = 'diccionario dicc_center') , tags$th('Descripción', class = 'diccionario dicc_center') , tags$th('Tipo o Categorías', class = 'diccionario dicc_center')),
+                                     tags$tr(tags$td('ambulancia', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si una ambulancia estuvo presente al momento del percance', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('arbol', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si un árbol, arbusto, rama o tronco estuvieron involucrados en el accidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('piedra', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si una piedra, roca o peña estuvieron incolucradas en el incidente vial', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('dormido', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el asegurado manisfestó haberse dormido segundos antes del accidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('grua', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si una grúa fue necesario después del percance', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('obra_civil', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el incidente vial causó daños en la infraestructura civil (banqueta, postes, sardinel, etc)', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('pavimento_mojado', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si había evidencia de pavimento mojado en el lugar del percance', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('explosion_llanta', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el asegurado manifiesta explosión de llantas como consecuencia del incidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('volcadura', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el ajustador maniesfiesta volcadura del vehículo durante el percance', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('perdida_total', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el auto fue enviado para valuación de pérdida total', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('conductor_distraido', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el asegurado manifestó haberse distraido segundos antes del accidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('fuga', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el el asegurado o ajustador manifiestan fuga del tercero responsable', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('alcohol', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el ajustador percibe aliento alcohólico en el conductor o estado de ebriedad', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('motocicleta', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el ajustador manifiesta involucramiento de motocicleta en el accidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('bicicleta', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si el ajustador manifiesta involucramiento de bicicleta en el incidente', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('seguro', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si alguno de los terceros vinculados en el percance vial contaba con un seguro de autos o responsabilidad civil', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('taxi', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si alguno de los vehículos involucrados correspondia a un servicio público de taxi o especial', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario'),
+                                     tags$tr(tags$td('animal', class = 'diccionario dicc_center dicc_rndm'),
+                                             tags$td('Si en el accidente estuvo involucrado algún semoviente (perro, burro, vaca, gato, otros)', class = 'diccionario'),
+                                             tags$td('Booleano', class = 'diccionario'),
+                                             class = 'diccionario')
+                          )
+    ))
   })
   
-  # = Campos Repubikla
-  output$texto_campos_repubikla <- renderText({
-    if (input$campos_repubikla == 'Comentario') {
-      'Contiene de forma completa el Titular de la Noticia, Tweet o cualquier otro tipo de descriptor encontrado en la fuente de donde fue obtenido el registro.'
-    } else if (input$campos_repubikla == 'Modo') {
-      'Describe la naturaleza del individuo y/o vehículo involucrado en el incidente vial. Puede ser "Ciclista", "Motociclista", "Mototaxi", "Peatón" o "Triciclo"'
-    } else if (input$campos_repubikla == 'Fuente') {
-      'Se trata de una liga directa a la fuente a través de la cual el incidente vial pudo ser captado por Repubikla, ya sea un Tweet, una noticia de periódico, una publicación en un blog, etc.'
-    } else if (input$campos_repubikla == 'Responsable') {
-      'Determina qué vehículo fue el probable responsable del incidente vial registrado. Comúnmente contiene vehículos no motorizados, tales como "Autobús", "Camión", "Metrobús", "Taxi", "Tráiler", "Trolebús", entre otros.'
-    } else if (input$campos_repubikla == 'Gravedad') {
-      'Aporta más detalles sobre las lesiones presentadas por el individio involucrado, así como si fue requerida una Unidad Médica o, inclusive, si derivó en una muerte, caso en el que la columna contiene "Mortal"'
-    } else if (input$campos_repubikla == 'Seguimiento') {
-      'Aporta más detalles sobre lo sucedido después del incidente. Por ejemplo, menciona si el responsable fue detenido por las autoridades, huyó de la escena, existió algún traslado a hospital, acudieron bomberos, entre otros.'
-    }
-  })
+  output$repubikla_cuantos <- renderText(format(nrow(repubikla) , big.mark = ','))
+  output$repubikla_cuando1 <- renderText(str_to_title(format(range(repubikla$timestamp)[1] , format = '%d/%B/%Y') , locale = 'es'))
+  output$repubikla_cuando2 <- renderText(str_to_title(format(range(repubikla$timestamp)[2] , format = '%d/%B/%Y') , locale = 'es'))
   
+  onclick(id = 'bd_modo-repubikla' , {
+    showModal(modalDialog(title = NULL , footer = NULL, easyClose = TRUE,
+                          tags$p(strong('Modos de Víctimas registrados por Repubikla'), style = 'font-size: 14pt; color: #848888; text-align: left;'),
+                          tags$ul(style = 'color: #697070;',
+                                  tags$li('Ciclista'),
+                                  tags$li('Motocilista'),
+                                  tags$li('Mototaxi'),
+                                  tags$li('Peatón'),
+                                  tags$li('Triciclo'))
+    ))
+  })
   
   # ===== CUADROS DE INFORMACIÓN EXTRA =====
   output$extra1 <- renderValueBox({
@@ -699,6 +1358,120 @@ server <- function(input, output, session) {
     else if (input$menu_bd == 'C5') '(C5)'
     else if (input$menu_bd == 'AXA') '(AXA)'
     else if (input$menu_bd == 'Repubikla') '(Repubikla)'
+  })
+  
+  # ===== INSTRUCCIONES VISUALIZADOR =====
+  observeEvent(input$boton_ver_bd2 , updateTabItems(session , inputId = 'menu_1' , selected = 'bd'))
+  
+  observeEvent(input$boton_ver_integracion2 , updateTabItems(session , inputId = 'menu_1' , selected = 'instrucciones'))
+  
+  observeEvent(input$boton_ver_instrucciones , {
+    if (input$boton_ver_instrucciones %% 2 == 0) {
+      hideElement(id = 'berenjena' , anim = TRUE)
+      updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ver Instrucciones' , icon = icon('question-circle'))
+    }
+    else {
+      showElement(id = 'berenjena' , anim = TRUE)
+      updateActionButton(session , inputId = 'boton_ver_instrucciones' , label = 'Ocultar Instrucciones' , icon = icon('times-circle'))
+    }
+  })
+  
+  observeEvent(input$l_instrucciones , {
+    if (input$no_instrucciones == 1) updateNumericInput(session , inputId = 'no_instrucciones' , value = 8)
+    else updateNumericInput(session , inputId = 'no_instrucciones' , value = input$no_instrucciones - 1)
+  })
+  
+  observeEvent(input$r_instrucciones , {
+    if (input$no_instrucciones == 8) updateNumericInput(session , inputId = 'no_instrucciones' , value = 1)
+    else updateNumericInput(session , inputId = 'no_instrucciones' , value = input$no_instrucciones + 1)
+  })
+  
+  output$pagina_instrucciones <- renderText(input$no_instrucciones)
+  
+  output$titulo_instrucciones <- renderText({
+    if (input$no_instrucciones == 1) 'Descripción del Visualizador'
+    else if (input$no_instrucciones == 2) 'Selección de Bases de Datos'
+    else if (input$no_instrucciones == 3) 'Filtros de Incidentes Viales'
+    else if (input$no_instrucciones == 4) 'Mapa Interactivo'
+    else if (input$no_instrucciones == 5) 'Gráficas de Incidentes Viales'
+    else if (input$no_instrucciones == 6) 'Gráficas por Totales'
+    else if (input$no_instrucciones == 7) 'Gráficas por Día y Hora'
+    else if (input$no_instrucciones == 8) 'Video Explicativo del Visualizador'
+  })
+  
+  output$desc_instrucciones <- renderUI({
+    if (input$no_instrucciones == 1) HTML(paste0('Esta aplicación es un <b>Visualizador de Incidentes Viales</b> registrados por distintas instituciones públicas y privadas a través de diferentes Bases de Datos.',
+                                                'La herramienta se conforma de tres secciones principales que permiten facilitar la exploración de estas bases:</br>',
+                                                '<ul><li><b>Mapa Interactivo</b> – Permite identificar la posición geográfica de cada uno de los incidentes, así como acceder a información detallada de cada uno.</li>',
+                                                '<li><b>Filtro de Incidentes</b> – Ayuda a filtrar las Bases de Datos en función de un lugar, tiempo o tipo de incidente en específico.</li>',
+                                                '<li><b>Gráficas de Incidentes Viales</b> – Permiten observar tendencias y estadísticos generales sobre los incidentes observados en el mapa.</li></ul>',
+                                                'Como tal, todas las bases pueden ser analizadas a detalle en función de las necesidades del usuario.'))
+    else if (input$no_instrucciones == 2) HTML(paste0('Para iniciar, es necesario seleccionar alguna de las Bases de Datos disponibles, lo cual permitirá visualizar los incidentes que contenga en el Mapa Interactivo. Cada Base de Datos se encuentra asociada a un color para facilitar su identificación:</br></br>',
+                                                      '<table style = "margin: auto; width: 60%;">
+                                                        <tr>
+                                                          <td style = "background-color: #952800; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>PGJ</b></td>
+                                                          <td style = "background-color: #043A5F; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>SSC</b></td>
+                                                          <td style = "background-color: #956F00; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>C5</b></td>
+                                                          <td style = "background-color: #5E0061; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>AXA</b></td>
+                                                          <td style = "background-color: #3F8500; width: 20px;"></td>
+                                                          <td style = "padding: 0px 2px;"><b>Repubikla</b></td>
+                                                        </tr>
+                                                      </table>',
+                                                      '</br>Es posible seleccionar más de una Base de Datos a la vez, permitiéndo observarlas todas al mismo tiempo si el usuario así lo desea.'))
+    else if (input$no_instrucciones == 3) HTML(paste0('Es posible filtrar los incidentes observados en el mapa de tres maneras distintas:',
+                                                      '<ul>
+                                                        <li><b>Fecha</b> – Utilizando el deslizador ubicado debajo del mapa, el usuario puede seleccionar un periodo de tiempo específico.</li>
+                                                        <li><b>Lugar</b> – El menú bajo el nombre de "Área de Análisis" permite observar los incidentes ocurridos en toda la extensión de la CDMX, o únicamente en alguna de sus 16 alcaldías.</li>
+                                                        <li><b>Tipo de Incidente</b> – Los incidentes viales se han dividido en tres tipos:
+                                                          <ul>
+                                                            <li><i>Decesos</i> – Todos aquellos en los que se registró por lo menos algún fallecido.</li>
+                                                            <li><i>Lesionados</i> – Aquellos en los que la respectiva institución registró a la víctima del incidente lesionada de alguna forma.</li>
+                                                            <li><i>Accidentes</i> – Todos los incidentes donde no se registró ni un fallecido ni un lesionado.</li>
+                                                          </ul></li>
+                                                      </ul>',
+                                                      'El usuario puede visualizar sólo un tipo de Incidente Vial a la vez, o todos ellos al mismo tiempo. Asimismo, cada tipo de incidente se encuentra asociado a un ícono en particular:</br></br>',
+                                                      '<table style = "margin: auto; width: 60%;">
+                                                        <tr>
+                                                          <td><div class="fa fa-skull" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Decesos</b></td>
+                                                          <td><div class="fa fa-medkit" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Lesionados</b></td>
+                                                          <td><div class="fa fa-car-crash" style = "color:black; font-size:20pt;"></div></td>
+                                                          <td style = "padding: 0px 2px;"><b>Accidentes</b></td>
+                                                        </tr>
+                                                      </table>'))
+    else if (input$no_instrucciones == 4) HTML(paste0('En el mapa aparecerán todos los Incidentes Viales registrados por las instituciones seleccionadas que cumplan con los filtros establecidos. Los marcadores del mapa señalarán el color y el símbolo asociado a cada incidente, de acuerdo a la simbología presente en la esquina inferior derecha del mapa. Sus caracerísticas más importantes son:</br>',
+                                                      '<ul>
+                                                        <li>Los círculos con números, llamados <b>Clústers</b> indicarán el número de incidentes ocurridos en una zona en particular y, al dar clic en ellos, el mapa se acercará a ésta y mostrará los incidentes correspondientes.</li>
+                                                        <li>Al hacer clic en alguno de los incidentes, aparecerá información detallada sobre éste, como la fecha y hora del mismo, lo cual permitirá conocer más información sobre el mismo.</li>
+                                                        <li>El usuario puede moverse por el mapa a lo largo de toda la Ciudad, así como alejarse o acercarse tanto como se necesite.</li>
+                                                      </ul>',
+                                                      'De esta forma, tanto la Secretaría como los usuarios son capaces de entender en un primer nivel la dinámica espacial de los hechos de tránsito.'))
+    else if (input$no_instrucciones == 5) HTML(paste0('Los hechos de tránsito visualizados en el mapa también generarán gráficas que permiten entender el panorama general de los mismos a través de estadísticos básicos. De éstas, cabe destacar:</br>',
+                                                      '<ul>
+                                                        <li>En general, el usuario verá en el Eje Horizontal los meses correspondientes al periodo de tiempo aplicado en los filtros anteriores, y en el Eje Vertical un conteo del número de incidentes correspondientes.</li>
+                                                        <li>Es posible dar clic a la gráfica para conocer el número específico de incidentes viales en algún punto en particular.</li>
+                                                        <li>El usuario es capaz de <b>Categorizar</b> los Incidentes Viales a través del menú "Datos a Graficar", en función de las características de cada Base de Datos:</li>
+                                                          <ul>
+                                                            <li>Seleccionar "Gráficas Combinadas" genera una gráfica donde se realiza un conteo de todas las Bases de Datos seleccionadas</li>
+                                                            <li>Cualquier otra opción permitirá analizar a detalle alguna base en particular y categorizar según sus variables particulares. Por ejemplo, "PGJ" permite categorizar según el delito registrado en la Carpeta de Investigación.</li>
+                                                          </ul>
+                                                      </ul>',
+                                                      'Además, el botón en la esquina superior derecha de la sección de gráficas permite realizar un acercamiento a las mismas.'))
+    else if (input$no_instrucciones == 6) HTML(paste0('<p>La primera pestaña de la sección de gráficas, "Gráficas por Totales", permite obtener el total de Incidentes Viales ocurridos según los filtros de las secciones anteriores. A través de "Temporalidad a Graficar" es posible obtener los totales por mes o por día:</p>',
+                                                      '<ul>
+                                                        <li><b>Por Mes</b> únicamente arrojará Gráficas de Línea con los totales de cada uno de los meses seleccionados. Al dar clic en ellas, se puede obtener el número exacto de incidentes en dicho mes.</li>
+                                                        <li><b>Por Día</b> permitirá saber el número de incidentes ocurridos durante cada uno de los días del periodo seleccionado. La línea delgada representa la frecuencia exacta de los incidentes, mientras que la más gruesa muestra un suavizado con la tendencia de estos incidentes. Al dar clic sobre la línea delgada, se obtendrá no sólo el total de incidentes, sino también la fecha exacta en la que ocurrieron.</li>
+                                                      </ul>',
+                                                      '<p>Las funciones de categorización y acercamiento a las gráficas son utilizables.</p>'))
+    else if (input$no_instrucciones == 7) HTML(paste0('<p>La segunda pestaña, "Gráficas por Día y Hora", permite conocer el número de incidentes viales ocurridos en función del día de la semana y el momento del día en el que ocurrieron.</p>',
+                                                      '<p>Debajo de "Temporalidad a Graficar" puede seleccionarse los Incidentes Viales ocurridos durante la <i>Mañana</i> (6:00 AM a 12:59 PM), <i>Tarde</i> (1:00 PM a 9:59PM) o durante la <i>Noche</i> (10:00 PM a 5:59 AM)</p>',
+                                                      '<p>Asimismo, en la parte inferior de la gráfica se puede encontrar una Gráfica de Barras que representa la proporción de incidentes ocurridos durante los Fines de Semana (Viernes, Sábado y Domingo) o Entre Semana (Lunes, Martes, Miércoles y Jueves)</p>',
+                                                      '<p>Las funcionalidades de click para obtener totales, categorización de datos y acercamiento a gráficas también se encuentran disponibles.</p>'))
   })
   
   # ===== ACOMODO DE FECHAS LÍMITE =====
@@ -950,15 +1723,13 @@ server <- function(input, output, session) {
                                iconSize = c(35,35)),
                    options = markerOptions(opacity = 0.9),
                    popup = paste0('<b>Incidente SSC</b><br/>',
-                                  '<b>Tipo de Evento</b>: ' , str_to_title(bd$tmp_ssc$tipo_evento, locale = 'es') , '<br/>',
+                                  '<b>Tipo de Evento</b>: ' , str_to_title(bd$tmp_ssc$tipo_de_evento, locale = 'es') , '<br/>',
                                   '<b>Fecha y Hora de Hechos</b>: ' , format(bd$tmp_ssc$timestamp , format = '%d/%m/%Y, %T'), '<br/>',
-                                  '<b>Tipo de Intersección</b>: ' , str_to_title(bd$tmp_ssc$tipo_interseccion, locale = 'es'), '<br/>' ,
-                                  '<b>Cuadrante SSC</b>: ' , ifelse(bd$tmp_ssc$cuadrante == 'SD' , 'Sin Datos' , bd$tmp_ssc$cuadrante) , '<br/>',
-                                  '<b>Vehículos Involucrados</b>: ' , str_to_title(str_replace(ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_4) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2 , bd$tmp_ssc$tipo_vehiculo_3 , bd$tmp_ssc$tipo_vehiculo_4),
-                                                                             ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_3) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2 , bd$tmp_ssc$tipo_vehiculo_3),
-                                                                                    ifelse(!is.na(bd$tmp_ssc$tipo_vehiculo_2) , paste(sep = ', ' , bd$tmp_ssc$tipo_vehiculo_1 , bd$tmp_ssc$tipo_vehiculo_2) ,
-                                                                                           bd$tmp_ssc$tipo_vehiculo_1))) , 'SD' , 'Sin Datos') , locale = 'es') , '<br/>' ,
-                                  '<b>Ruta de Transporte Público</b>: ' , ifelse(bd$tmp_ssc$ruta_transporte_publico == 'SD' , 'Sin Datos', bd$tmp_ssc$ruta_transporte_publico) , '<br/>' ,
+                                  '<b>Tipo de Intersección</b>: ' , str_to_title(bd$tmp_ssc$tipo_de_interseccion, locale = 'es'), '<br/>' ,
+                                  '<b>Vehículos Involucrados</b>: ' , str_to_title(str_replace(ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_4) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2 , bd$tmp_ssc$tipo_de_vehiculo_3 , bd$tmp_ssc$tipo_de_vehiculo_4),
+                                                                             ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_3) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2 , bd$tmp_ssc$tipo_de_vehiculo_3),
+                                                                                    ifelse(!is.na(bd$tmp_ssc$tipo_de_vehiculo_2) , paste(sep = ', ' , bd$tmp_ssc$tipo_de_vehiculo_1 , bd$tmp_ssc$tipo_de_vehiculo_2) ,
+                                                                                           bd$tmp_ssc$tipo_de_vehiculo_1))) , 'SD' , 'Sin Datos') , locale = 'es') , '<br/>' ,
                                   '<b>Condición de Víctima Principal</b>: ' , str_to_title(bd$tmp_ssc$condicion , locale = 'es') , '<br/>' ,
                                   '<b>Identidad de Víctima Principal</b>: ' , str_to_title(bd$tmp_ssc$identidad, locale = 'es') , '<br/>',
                                   '<b>Total de Occisos</b>: ' , bd$tmp_ssc$total_occisos , '<br/>' ,
@@ -1404,9 +2175,27 @@ server <- function(input, output, session) {
               tmp <- dates(as.character(filtro_fecha_sp()[[1]]) , format = 'y-m-d')
               count <- data.frame(ao = year(tmp) , mes = month(tmp), categoria = 'Sin Datos' , n = 0)
             }
-            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , tipo_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='tipo_evento')
-            else if (input$subgrafica_ssc == 'Identidad') count <- count(tmp , year(timestamp) , month(timestamp) , identidad) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='identidad')
-            count$categoria <- str_to_title(count$categoria , locale = 'es')}
+            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , tipo_de_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'categoria'='tipo_de_evento')
+            else if (input$subgrafica_ssc == 'Identidad') {
+              count <- count(tmp , year(timestamp) , month(timestamp)) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)')
+              years <- unique(count$ao)
+              months <- unique(count$mes)
+              count <- data.frame(ao = as.integer() , mes = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+              for (ao in years) {
+                for (mes in months) {
+                  tmp2 <- filter(tmp , year(timestamp) == ao & month(timestamp) == mes)
+                  if (nrow(tmp2) != 0) {
+                    tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+                    tmp2$ao <- ao
+                    tmp2$mes <- mes
+                    tmp2 <- tmp2 %>% select(ao , mes , categoria , n)
+                    count <- rbind(count , tmp2)
+                  }
+                }
+              }
+            }
+            count$categoria <- str_to_title(count$categoria , locale = 'es')
+          }
           # =
           count$etiqueta <- count$mes
           count$etiqueta[count$etiqueta == 1] <- 'Ene'
@@ -1462,8 +2251,29 @@ server <- function(input, output, session) {
               tmp <- dates(as.character(filtro_fecha_sp()[[1]]) , format = 'y-m-d')
               count <- data.frame(ao = year(tmp) , mes = month(tmp) , dia = day(tmp) , categoria = 'Sin Datos' , n = 0)
             }
-            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , tipo_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' , 'categoria'='tipo_evento')
-            else if (input$subgrafica_ssc == 'Identidad') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , identidad) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' ,  'categoria'='identidad')
+            else if (input$subgrafica_ssc == 'Tipo de Evento') count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp) , tipo_de_evento) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia' = 'day(timestamp)' , 'categoria'='tipo_de_evento')
+            else if (input$subgrafica_ssc == 'Identidad') {
+              count <- count(tmp , year(timestamp) , month(timestamp) , day(timestamp)) %>% rename('ao'='year(timestamp)' , 'mes'='month(timestamp)' , 'dia'='day(timestamp)')
+              years <- unique(count$ao)
+              months <- unique(count$mes)
+              days <- unique(count$dia)
+              count <- data.frame(ao = as.integer() , mes = as.integer() , dia = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+              for (ao in years) {
+                for (mes in months) {
+                  for (dia in days) {
+                    tmp2 <- filter(tmp , year(timestamp) == ao & month(timestamp) == mes & day(timestamp) == dia)
+                    if (nrow(tmp2) != 0) {
+                      tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+                      tmp2$ao <- ao
+                      tmp2$mes <- mes
+                      tmp2$dia <- dia
+                      tmp2 <- tmp2 %>% select(ao , mes , dia , categoria , n)
+                      count <- rbind(count , tmp2)
+                    }
+                  }
+                }
+              }
+            }
             count$categoria <- str_to_title(count$categoria , locale = 'es')}
           # =
           count$fecha <- format(chron(dates(paste0(count$dia , '/' , count$mes , '/' ,count$ao) , format = 'd/m/y') , '00:00:00') , format = '%d/%m/%Y')
@@ -1844,17 +2654,31 @@ server <- function(input, output, session) {
       # ===
       if (is_graph == TRUE) {
         if (input$tiempo_grafica == 'Por Mes') {
-          grafica = grafica +
-            geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 2) +
-            scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
-                               minor_breaks = NULL,
-                               labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
-            scale_color_manual(values = paleta,
-                               limits = unique(count_final$categoria),
-                               name = 'Fuente de Datos' ,
-                               labels = unique(count_final$categoria)) +
-            ylim(0 , NA) +
-            labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          if (length(unique(count_final$etiqueta)) > 3) {
+            grafica = grafica +
+              geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 2) +
+              scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
+                                 minor_breaks = NULL,
+                                 labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
+              scale_color_manual(values = paleta,
+                                 limits = unique(count_final$categoria),
+                                 name = 'Fuente de Datos' ,
+                                 labels = unique(count_final$categoria)) +
+              ylim(0 , NA) +
+              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          }
+          else {
+            grafica = grafica +
+              geom_col(data = count_final , aes(x = ref , y = n , fill = categoria) , position = 'dodge') +
+              scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
+                                 minor_breaks = NULL,
+                                 labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
+              scale_fill_manual(values = paleta,
+                                 limits = unique(count_final$categoria),
+                                 name = 'Fuente de Datos' ,
+                                 labels = unique(count_final$categoria)) +
+              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+          }
         }
         else if (input$tiempo_grafica == 'Por Día') {
           grafica = grafica +
@@ -1873,7 +2697,6 @@ server <- function(input, output, session) {
       }
     }
     # ===
-    
     graf_modal$g <- grafica
     hover_h$h <- count_final
     grafica
@@ -1905,6 +2728,7 @@ server <- function(input, output, session) {
   
   # ===== FOOTER GRÁFICA - POR DÍA Y HORA =====
   observeEvent(c(input$tipo_grafica2 , filtro_bd_sp()) , ignoreNULL = FALSE, {
+    removeUI(selector = '#div_grafica_b2')
     if (is.null(filtro_bd_sp())) hideElement(id = 'boton_zoom_grafica2')
     else {
       showElement(id = 'boton_zoom_grafica2')
@@ -1914,6 +2738,30 @@ server <- function(input, output, session) {
                  tags$div(id = 'div_grafica_b2' ,
                           selectInput(inputId = 'subgrafica_pgj2' , label = 'Categorización de Datos' , selected = 'Sin Categoría' , width = '100%',
                                       choices = c('Sin Categoría' , 'Delito'))))
+      }
+      else if (input$tipo_grafica2 == 'SSC') {
+        insertUI(selector = '#div_grafica_a2' , where = 'afterEnd',
+                 tags$div(id = 'div_grafica_b2' ,
+                          selectInput(inputId = 'subgrafica_ssc2' , label = 'Categorización de Datos' , selected = 'Sin Categoría' , width = '100%',
+                                      choices = c('Sin Categoría' , 'Tipo de Evento' , 'Identidad'))))
+      }
+      else if (input$tipo_grafica2 == 'C5') {
+        insertUI(selector = '#div_grafica_a2' , where = 'afterEnd',
+                 tags$div(id = 'div_grafica_b2' ,
+                          selectInput(inputId = 'subgrafica_c52' , label = 'Categorización de Datos' , selected = 'Sin Categoría' , width = '100%',
+                                      choices = c('Sin Categoría' , 'Incidente C4' , 'Clase del Incidente' , 'Tipo de Entrada'))))
+      }
+      else if (input$tipo_grafica2 == 'AXA') {
+        insertUI(selector = '#div_grafica_a2' , where = 'afterEnd',
+                 tags$div(id = 'div_grafica_b2' ,
+                          selectInput(inputId = 'subgrafica_axa2' , label = 'Categorización de Datos' , selected = 'Sin Categoría' , width = '100%',
+                                      choices = c('Sin Categoría' , 'Causa del Siniestro' , 'Tipo de Vehículo' , 'Rol del Lesionado'))))
+      }
+      else if (input$tipo_grafica2 == 'Repubikla') {
+        insertUI(selector = '#div_grafica_a2' , where = 'afterEnd',
+                 tags$div(id = 'div_grafica_b2' ,
+                          selectInput(inputId = 'subgrafica_repubikla2' , label = 'Categorización de Datos' , selected = 'Sin Categoría' , width = '100%',
+                                      choices = c('Sin Categoría' , 'Modo'))))
       }
     }
   })
@@ -2001,7 +2849,7 @@ server <- function(input, output, session) {
         if (nrow(tmp) == 0) {
           count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
           for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         } 
         else if (input$subgrafica_pgj2 == 'Sin Categoría') {
           count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
@@ -2011,8 +2859,306 @@ server <- function(input, output, session) {
         }
         else if (input$subgrafica_pgj2 == 'Delito') {
           count <- count(tmp , wday(timestamp) , delito) %>% rename('ref'='wday(timestamp)' , 'categoria'='delito')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
         }
-        
+        # =
+        count$etiqueta <- count$ref
+        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # =
+        count$ref <- as.integer(count$ref)
+        count$n <- as.integer(count$n)
+        count <- count[order(count$ref),]
+        # =
+        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
+      }
+      else if (input$tipo_grafica2 == 'SSC' & !is.null(input$subgrafica_ssc2) & !is.null(bd$tmp_ssc)) {
+        is_graph <- TRUE
+        if (input$subgrafica_ssc2 == 'Sin Categoría') paleta <- c('#043A5F')
+        else paleta <- c('#006386' , '#008E97' , '#00B891' , '#8CDC7D' , '#F9F871' , '#6B6399' , '#9B77B0' , '#CC8BC3' , '#FDA1D1')
+        # =
+        max <- 0
+        tmp <- bd$tmp_ssc
+        tmp$geometry <- NULL
+        if (!is.null(tmp)) {
+          if (nrow(tmp) != 0) {
+            if (input$subgrafica_ssc2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+            else if (input$subgrafica_ssc2 == 'Tipo de Evento') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_de_evento)$n)/10)*10
+            else if (input$subgrafica_ssc2 == 'Identidad') max <- (ceiling(max(count(tmp , wday(timestamp) , identidad)$n)/10)*10) + 5
+          }}
+        # =
+        if (!is.null(tmp)) {
+          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
+          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
+          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
+        }
+        # =
+        if (nrow(tmp) == 0) {
+          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
+        } 
+        else if (input$subgrafica_ssc2 == 'Sin Categoría') {
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+          count$categoria <- 'SSC'
+        }
+        else if (input$subgrafica_ssc2 == 'Tipo de Evento') {
+          count <- count(tmp , wday(timestamp) , tipo_de_evento) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_de_evento')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        else if (input$subgrafica_ssc2 == 'Identidad') {
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)' )
+          weekdays <- unique(count$ref)
+          count <- data.frame(ref = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
+          for (wd in weekdays) {
+            tmp2 <- filter(tmp , wday(timestamp) == wd)
+            if (nrow(tmp2) != 0) {
+              tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
+              tmp2$ref <- wd
+              tmp2 <- tmp2 %>% select(ref , categoria , n)
+              count <- rbind(count , tmp2)
+            }
+          }
+          # =====
+          # count <- count(tmp , wday(timestamp) , identidad) %>% rename('ref'='wday(timestamp)' , 'categoria'='identidad')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        # =
+        count$etiqueta <- count$ref
+        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # =
+        count$ref <- as.integer(count$ref)
+        count$n <- as.integer(count$n)
+        count <- count[order(count$ref),]
+        # =
+        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
+      }
+      else if (input$tipo_grafica2 == 'C5' & !is.null(input$subgrafica_c52) & !is.null(bd$tmp_c5)) {
+        is_graph <- TRUE
+        if (input$subgrafica_c52 == 'Sin Categoría') paleta <- c('#956F00')
+        else paleta <- c('#956F00', '#5D731D' , '#276E40' , '#006459' , '#015762' , '#2F4858' , '#C2A573' , '#FFEECB' , '#00C9B1' , '#4E4637' , '#B5AA99' , '#987061' , '#FFC1B2' , '#FE8A7D' , '#C1554C' ,
+                         '#a78e72' , '#e48d24' , '#725238' , '#e1b53f' , '#7f6342' , '#e6c392' , '#715c09' , '#dda25a' , '#895c1d' , '#ad8220' , '#a2814d' , '#b2712f')
+        # =
+        max <- 0
+        tmp <- bd$tmp_c5
+        tmp$geometry <- NULL
+        if (!is.null(tmp)) {
+          if (nrow(tmp) != 0) {
+            if (input$subgrafica_c52 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+            else if (input$subgrafica_c52 == 'Incidente C4') max <- ceiling(max(count(tmp , wday(timestamp) , incidente_c4)$n)/10)*10
+            else if (input$subgrafica_c52 == 'Clase del Incidente') max <- ceiling(max(count(tmp , wday(timestamp) , clas_con_f_alarma)$n)/10)*10
+            else if (input$subgrafica_c52 == 'Tipo de Entrada') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_entrada)$n)/10)*10
+          }}
+        # =
+        if (!is.null(tmp)) {
+          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
+          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
+          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
+        }
+        # =
+        if (nrow(tmp) == 0) {
+          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
+        } 
+        else if (input$subgrafica_c52 == 'Sin Categoría') {
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+          count$categoria <- 'C5'
+        }
+        else if (input$subgrafica_c52 == 'Incidente C4') {
+          count <- count(tmp , wday(timestamp) , incidente_c4) %>% rename('ref'='wday(timestamp)' , 'categoria'='incidente_c4')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        else if (input$subgrafica_c52 == 'Clase del Incidente') {
+          count <- count(tmp , wday(timestamp) , clas_con_f_alarma) %>% rename('ref'='wday(timestamp)' , 'categoria'='clas_con_f_alarma')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        else if (input$subgrafica_c52 == 'Tipo de Entrada') {
+          count <- count(tmp , wday(timestamp) , tipo_entrada) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_entrada')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        # =
+        count$etiqueta <- count$ref
+        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # =
+        count$ref <- as.integer(count$ref)
+        count$n <- as.integer(count$n)
+        count <- count[order(count$ref),]
+        # =
+        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
+      }
+      else if (input$tipo_grafica2 == 'AXA' & !is.null(input$subgrafica_axa2) & !is.null(bd$tmp_axa)) {
+        is_graph <- TRUE
+        if (input$subgrafica_axa2 == 'Sin Categoría') paleta <- c('#5E0061')
+        else paleta <- c('#5E0061' , '#A1145F' , '#D44755' , '#F37F4B' , '#FFBB4F' , '#F9F871' , '#474197' , '#006CBD' , '#36D9D3' , '#7D527C' , '#FFE7FF')
+        # =
+        max <- 0
+        tmp <- bd$tmp_axa
+        tmp$geometry <- NULL
+        if (!is.null(tmp)) {
+          if (nrow(tmp) != 0) {
+            if (input$subgrafica_axa2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+            else if (input$subgrafica_axa2 == 'Causa del Siniestro') max <- ceiling(max(count(tmp , wday(timestamp) , causa_siniestro)$n)/10)*10
+            else if (input$subgrafica_axa2 == 'Tipo de Vehículo') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_vehiculo)$n)/10)*10
+            else if (input$subgrafica_axa2 == 'Rol del Lesionado') max <- ceiling(max(count(tmp , wday(timestamp) , relacion_lesionados)$n)/10)*10
+          }}
+        # =
+        if (!is.null(tmp)) {
+          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
+          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
+          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
+        }
+        # =
+        if (nrow(tmp) == 0) {
+          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
+        } 
+        else if (input$subgrafica_axa2 == 'Sin Categoría') {
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+          count$categoria <- 'AXA'
+        }
+        else if (input$subgrafica_axa2 == 'Causa del Siniestro') {
+          count <- count(tmp , wday(timestamp) , causa_siniestro) %>% rename('ref'='wday(timestamp)' , 'categoria'='causa_siniestro')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        else if (input$subgrafica_axa2 == 'Tipo de Vehículo') {
+          count <- count(tmp , wday(timestamp) , tipo_vehiculo) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_vehiculo')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        else if (input$subgrafica_axa2 == 'Rol del Lesionado') {
+          count <- count(tmp , wday(timestamp) , relacion_lesionados) %>% rename('ref'='wday(timestamp)' , 'categoria'='relacion_lesionados')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        # =
+        count$etiqueta <- count$ref
+        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # =
+        count$ref <- as.integer(count$ref)
+        count$n <- as.integer(count$n)
+        count <- count[order(count$ref),]
+        # =
+        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
+      }
+      else if (input$tipo_grafica2 == 'Repubikla' & !is.null(input$subgrafica_repubikla2) & !is.null(bd$tmp_repubikla)) {
+        is_graph <- TRUE
+        if (input$subgrafica_repubikla2 == 'Sin Categoría') paleta <- c('#3F8500')
+        else paleta <- c('#3F8500' , '#00735C' , '#00666B' , '#005769' , '#2F4858' , '#008DA8' , '#008ABF' , '#97B27E' , '#E4F7D2' , '#5CB7D5')
+        # =
+        max <- 0
+        tmp <- bd$tmp_repubikla
+        tmp$geometry <- NULL
+        if (!is.null(tmp)) {
+          if (nrow(tmp) != 0) {
+            if (input$subgrafica_repubikla2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+            else if (input$subgrafica_repubikla2 == 'Modo') max <- ceiling(max(count(tmp , wday(timestamp) , modo)$n)/10)*10
+          }}
+        # =
+        if (!is.null(tmp)) {
+          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
+          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
+          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
+        }
+        # =
+        if (nrow(tmp) == 0) {
+          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
+        } 
+        else if (input$subgrafica_repubikla2 == 'Sin Categoría') {
+          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
+          for (i in seq(7)) {
+            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+          count$categoria <- 'Repubikla'
+        }
+        else if (input$subgrafica_repubikla2 == 'Modo') {
+          count <- count(tmp , wday(timestamp) , modo) %>% rename('ref'='wday(timestamp)' , 'categoria'='modo')
+          for (i in seq(7)) {
+            for (cat in unique(count$categoria)) {
+              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+            }}
+          count$categoria <- str_to_title(count$categoria , locale = 'es')
+        }
+        # =
+        count$etiqueta <- count$ref
+        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # =
+        count$ref <- as.integer(count$ref)
+        count$n <- as.integer(count$n)
+        count <- count[order(count$ref),]
+        # =
+        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
       }
       # =====
       if (is_graph == TRUE) {
@@ -2148,7 +3294,28 @@ server <- function(input, output, session) {
     k <- hover_h$h
     if (!is.null(k) & !is.null(hover)) {
       if (nrow(k) != 0) {
-        point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
+        if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+          range <- c(NA , NA)
+          if (hover$x > 0.5 & hover$x <= 1.5) range <- c(0.5 , 1.5)
+          else if (hover$x > 1.5 & hover$x <= 2.5) range <- c(1.5 , 2.5)
+          else if (hover$x > 2.5 & hover$x <= 3.5) range <- c(2.5 , 3.5)
+          if (is.na(range[1])) return(NULL)
+          else {
+            intv <- 1/length(unique(k$categoria))
+            df <- data.frame(cat = as.character() , pos = as.integer() , min = as.numeric() , max = as.numeric(), stringsAsFactors = FALSE)
+            i <- 1
+            for (cat in sort(unique(k$categoria))) {
+              df[nrow(df) + 1,] <- c(cat , i , range[1] + (intv*(i-1)) , range[1] + (intv*i))
+              i <- i + 1}
+            for (i in 1:length(df$cat)) {
+              if (hover$x > df$min[i] & hover$x <= df$max[i]) {
+                ref <- (range[1] + range[2])/2
+                cat <- df[df$pos == i,]$cat
+                point <- k[k$categoria == cat & k$ref == ref,]
+                z <- FALSE}}
+          }
+        }
+        else point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
         if (nrow(point) == 0) return(NULL)
         # =
         left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
@@ -2157,9 +3324,16 @@ server <- function(input, output, session) {
         left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
         top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
         # =
-        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
-                        "left:", left_px + 10, "px; top:", top_px + 140, "px;
+        if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+          style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                          "left:", left_px + 10, "px; top:", top_px + 140, "px;
                       padding: 5px 10px 0px; border-radius: 10px;")
+        }
+        else {
+          style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                          "left:", left_px + 10, "px; top:", top_px + 140, "px;
+                      padding: 5px 10px 0px; border-radius: 10px;")
+        }
         # =
         if (input$filtro_incidente == 'Decesos') palabra <- ' Decesos'
         else if (input$filtro_incidente == 'Lesionados') palabra <- ' Lesionados'
@@ -2169,6 +3343,7 @@ server <- function(input, output, session) {
         if (point$n == 1) palabra <- substring(palabra , 0 , nchar(palabra) - 1)
         # =
         if (input$tiempo_grafica == 'Por Mes') {
+          if (length(unique(k$etiqueta)) <= 3 & point$n <= hover$y) return(NULL)
           tags$div(
             style = style,
             p(HTML(paste0('<b>', point$categoria ,'</b><br/>',
@@ -2193,9 +3368,31 @@ server <- function(input, output, session) {
   
   output$click_info_modal_a <- renderUI({
     hover <- input$plot_click_modal_a
+    if (is.null(hover)) return(NULL)
     k <- hover_h$h
     if (!is.null(k)) {
-      point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
+      if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+        range <- c(NA , NA)
+        if (hover$x > 0.5 & hover$x <= 1.5) range <- c(0.5 , 1.5)
+        else if (hover$x > 1.5 & hover$x <= 2.5) range <- c(1.5 , 2.5)
+        else if (hover$x > 2.5 & hover$x <= 3.5) range <- c(2.5 , 3.5)
+        if (is.na(range[1])) return(NULL)
+        else {
+          intv <- 1/length(unique(k$categoria))
+          df <- data.frame(cat = as.character() , pos = as.integer() , min = as.numeric() , max = as.numeric(), stringsAsFactors = FALSE)
+          i <- 1
+          for (cat in sort(unique(k$categoria))) {
+            df[nrow(df) + 1,] <- c(cat , i , range[1] + (intv*(i-1)) , range[1] + (intv*i))
+            i <- i + 1}
+          for (i in 1:length(df$cat)) {
+            if (hover$x > df$min[i] & hover$x <= df$max[i]) {
+              ref <- (range[1] + range[2])/2
+              cat <- df[df$pos == i,]$cat
+              point <- k[k$categoria == cat & k$ref == ref,]
+              z <- FALSE}}
+        }
+      }
+      else point <- nearPoints(df = k, coordinfo = hover, threshold = 5, maxpoints = 1)
       if (nrow(point) == 0) return(NULL)
       # =
       left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
@@ -2204,10 +3401,17 @@ server <- function(input, output, session) {
       left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
       top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
       # =
-      style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
-                      "left:", left_px + 10, "px; top:", top_px - 40, "px;
+      if (input$tiempo_grafica == 'Por Mes' & length(unique(k$etiqueta)) <= 3) {
+        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                        "left:", left_px + 10, "px; top:", top_px - 40, "px;
+                      padding: 5px 10px 0px; border-radius: 10px;")
+      }
+      else {
+        style <- paste0("position:absolute; z-index:100; background-color: rgba(205, 205, 205, 0.80); ",
+                        "left:", left_px + 10, "px; top:", top_px - 40, "px;
                       padding: 5px 10px 0px; border-radius: 10px;
-                      font-size: 125%;")
+                      font-size: 125%;") 
+      }
       # =
       if (input$filtro_incidente == 'Decesos') palabra <- ' Decesos'
       else if (input$filtro_incidente == 'Lesionados') palabra <- ' Lesionados'
@@ -2217,6 +3421,7 @@ server <- function(input, output, session) {
       if (point$n == 1) palabra <- substring(palabra , 0 , nchar(palabra) - 1)
       # =
       if (input$tiempo_grafica == 'Por Mes') {
+        if (length(unique(k$etiqueta)) <= 3 & point$n <= hover$y) return(NULL)
         tags$div(
           style = style,
           p(HTML(paste0('<b>', point$categoria ,'</b><br/>',
@@ -2356,27 +3561,7 @@ server <- function(input, output, session) {
     } else NULL
   })
   
-  # ===== TABLA CON TOTALES =====
-  # output$tabla_totales <- renderTable(striped = TRUE , digits = 0, spacing = 'xs' , {
-  #   k <- NULL
-  #   if (!is.null(hover_h$hk1)) k <- hover_h$hk1
-  #   else if (!is.null(hover_h$hk2)) k <- hover_h$hk2
-  #   # =
-  #   if (is.null(k)) NULL
-  #   else if (input$tipo_grafica == 'Gráficas Combinadas') {
-  #     a <- data.frame(Fuente = unique(k$fuente))
-  #     for (i in unique(k$etiqueta)) {
-  #       a[i] <- filter(k , etiqueta == i)$n}
-  #     # =
-  #     tmp <- aggregate(k$n , by = list(fuente = k$fuente) , FUN = sum)
-  #     orden <- c('PGJ' , 'SSC' , 'C5' , 'AXA' , 'Repubikla')
-  #     tmp$fuente <- factor(as.character(tmp$fuente) , levels = orden)
-  #     tmp <- tmp[order(tmp$fuente),]
-  #     a['Total'] <- tmp$x
-  #     # =
-  #     a
-  #   }
-  # })
+  
 }
 
 shinyApp(ui = ui, server = server)
