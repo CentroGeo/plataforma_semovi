@@ -1,118 +1,115 @@
 # Visualizador de SEMOVI
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(shiny, sf, tidyverse, leaflet, chron, lubridate, readxl, jsonlite,
+shinycssloaders, shinydashboard, shinyjs, leaflet.extras, htmltools, janitor)
 
-library(shiny)
-library(sf)
-library(tidyverse)
-library(leaflet)
+# library(shiny)
+# library(sf)
+# library(tidyverse)
+# library(leaflet)
 
-library(chron)
-library(lubridate)
-library(readxl)
-library(jsonlite)
-library(shinycssloaders)
+# library(chron)
+# library(lubridate)
+# library(readxl)
+# library(jsonlite)
+# library(shinycssloaders)
 
-library(shinydashboard)
-library(shinyjs)
-library(leaflet.extras)
-library(htmltools)
+# library(shinydashboard)
+# library(shinyjs)
+# library(leaflet.extras)
+# library(htmltools)
 
 # ===== OPERACIONES INICIALES =====
 cdmx <- read_sf(dsn = "data/cdmx.shp", layer = "cdmx")
 cdmx_sa <- read_sf(dsn = "data/cdmx_sa.shp", layer = "cdmx_sa")
-# 
-# # = PGJ =
-# pgj <- read.csv('data/PGJ.csv' , sep = ';' , encoding = 'UTF-8' , stringsAsFactors = FALSE)
-# # =
-# pgj['hora_de_hechos'] <- times(paste0(substr(pgj$fecha_hechos , 12 , 16), ':00'))
-# pgj['fecha_de_hechos'] <- dates(substr(pgj$fecha_hechos , 1 , 10) , format = 'y-m-d')
-# pgj['timestamp'] <- chron(pgj$fecha_de_hechos , pgj$hora_de_hechos)
-# pgj <- filter(pgj , timestamp >= dates('2018-01-01' , format = 'y-m-d'))
-# # =
-# pgj['geopoint'] <- NULL
-# pgj <- pgj[order(pgj$timestamp),]
-# pgj['id'] <- seq.int(nrow(pgj))
-# pgj <- filter(pgj , !is.na(latitud) & !is.na(longitud))
-# pgj <- filter(pgj , !is.na(timestamp))
-# # =
-# pgj <- st_transform(st_as_sf(pgj , coords = c('longitud','latitud') , crs = 4326), 32614)
-# 
-# # =SSC =
-# ssc <- read.csv('data/SSC.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
-# ssc$tmp <- times(substring(ssc$hora , 1 , 8))
-# ssc$tmp[str_sub(ssc$hora , -2) == 'PM' &  str_sub(ssc$hora , start = 1 , end = 2) != '12'] <- ssc$tmp[str_sub(ssc$hora , -2) == 'PM' &  str_sub(ssc$hora , start = 1 , end = 2) != '12'] + 0.5
-# ssc$tmp[str_sub(ssc$hora , -2) == 'AM' &  str_sub(ssc$hora , start = 1 , end = 2) == '12'] <- ssc$tmp[str_sub(ssc$hora , -2) == 'AM' &  str_sub(ssc$hora , start = 1 , end = 2) == '12'] - 0.5
-# ssc$hora <- ssc$tmp
-# ssc$tmp <- NULL
-# # ssc['hora'] <- times(substr(as.character(strptime(as.character(ssc$hora) , '%I:%M:%S %p')), 12 , 19))
-# ssc['fecha_evento'] <- dates(as.character(ssc$fecha_evento) , format = 'd/m/y')
-# ssc['timestamp'] <- chron(ssc$fecha_evento , ssc$hora)
-# ssc <- filter(ssc , timestamp >= dates('2018-01-01' , format = 'y-m-d'))
-# ssc['tipo_vehiculo_1'] <- as.character(ssc$tipo_vehiculo_1)
-# ssc['tipo_vehiculo_2'] <- as.character(ssc$tipo_vehiculo_2)
-# ssc['tipo_vehiculo_3'] <- as.character(ssc$tipo_vehiculo_3)
-# ssc['tipo_vehiculo_4'] <- as.character(ssc$tipo_vehiculo_4)
-# ssc['ruta_transporte_publico'] <- as.character(ssc$ruta_transporte_publico)
-# ssc['identidad'] <- as.character(ssc$identidad)
-# ssc <- filter(ssc , !is.na(coordenada_y) & !is.na(coordenada_x))
-# ssc <- filter(ssc , !is.na(timestamp))
-# # =
-# ssc <- st_transform(st_as_sf(ssc , coords = c('coordenada_y','coordenada_x') , crs = 4326), 32614)
-# 
-# # = C5 =
-# c5 <- read.csv('data/C5.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
-# # =
-# c5['hora_creacion'] <- times(c5$hora_creacion)
-# c5['fecha_creacion'] <- dates(as.character(c5$fecha_creacion), format = 'd/m/y')
-# c5['timestamp'] <- chron(c5$fecha_creacion , c5$hora_creacion)
-# c5 <- filter(c5 , timestamp >= dates('2018-01-01' , format = 'y-m-d'))
-# c5 <- filter(c5 , timestamp >= dates('2014-01-01' , format = 'y-m-d'))
-# # =
-# c5['geopoint'] <- NULL
-# c5 <- filter(c5 , !is.na(latitud) & !is.na(longitud))
-# c5 <- filter(c5 , !is.na(timestamp))
-# # =
-# c5 <- st_transform(st_as_sf(c5 , coords = c('longitud','latitud') , crs = 4326), 32614)
-# 
-# # = AXA =
-# axa <- read.csv('data/AXA.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
-# # =
-# axa['hora'] <- times(paste0(axa$hora, ':01:00'))
-# axa['mes'] <- as.character(axa$mes)
-# axa$mes[axa$mes == 'ENERO'] <- 1
-# axa$mes[axa$mes == 'FEBRERO'] <- 2
-# axa$mes[axa$mes == 'MARZO'] <- 3
-# axa$mes[axa$mes == 'ABRIL'] <- 4
-# axa$mes[axa$mes == 'MAYO'] <- 5
-# axa$mes[axa$mes == 'JUNIO'] <- 6
-# axa$mes[axa$mes == 'JULIO'] <- 7
-# axa$mes[axa$mes == 'AGOSTO'] <- 8
-# axa$mes[axa$mes == 'SEPTIEMBRE'] <- 9
-# axa$mes[axa$mes == 'OCTUBRE'] <- 10
-# axa$mes[axa$mes == 'NOVIEMBRE'] <- 11
-# axa$mes[axa$mes == 'DICIEMBRE'] <- 12
-# axa['fecha'] <- dates(paste0(axa$dia_numero , '/' , axa$mes , '/' , axa$ao) , format = 'd/m/y')
-# axa['timestamp'] <- chron(axa$fecha , axa$hora)
-# axa <- filter(axa , timestamp >= dates('2018-01-01' , format = 'y-m-d'))
-# # =
-# # axa['siniestro'] <- as.character(axa$siniestro)
-# # axa$siniestro[axa$siniestro == '\\N'] <- paste0('SinID_', seq(1:nrow(filter(axa , siniestro == '\\N'))))
-# axa <- filter(axa , !is.na(latitud) & !is.na(longitud))
-# axa <- filter(axa , !is.na(timestamp))
-# # =
-# axa <- st_transform(st_as_sf(axa , coords = c('longitud','latitud') , crs = 4326), 32614)
-# 
-# # = Repubikla =
-# repubikla <- read.csv('data/repubikla.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
-# # =
-# repubikla['hora'] <- times(paste0(as.character(repubikla$hora), ':00'))
-# repubikla['fecha'] <- dates(as.character(repubikla$fecha) , format = 'y-m-d')
-# repubikla['timestamp'] <- chron(repubikla$fecha , repubikla$hora)
-# repubikla <- filter(repubikla , timestamp >= dates('2018-01-01' , format = 'y-m-d'))
-# repubikla <- filter(repubikla , !is.na(lat) & !is.na(lon))
-# repubikla <- filter(repubikla , !is.na(timestamp))
-# # =
-# repubikla <- st_transform(st_as_sf(repubikla , coords = c('lon','lat') , crs = 4326), 32614)
+# ===== PGJ =====
+pgj <- read.csv('data/PGJ.csv', encoding = 'UTF-8' , stringsAsFactors = FALSE)
+# =
+pgj['hora_de_hechos'] <- times(paste0(substr(pgj$fecha_hechos , 12 , 16), ':00'))
+pgj['fecha_de_hechos'] <- dates(substr(pgj$fecha_hechos , 1 , 10) , format = 'y-m-d')
+pgj['timestamp'] <- chron(pgj$fecha_de_hechos , pgj$hora_de_hechos)
+pgj <- filter(pgj , timestamp >= dates('2016-01-01' , format = 'y-m-d'))
+# =
+pgj['geopoint'] <- NULL
+pgj <- pgj[order(pgj$timestamp),]
+pgj['id'] <- seq.int(nrow(pgj))
+pgj <- filter(pgj , !is.na(latitud) & !is.na(longitud))
+pgj <- filter(pgj , !is.na(timestamp))
+# =
+pgj <- st_transform(st_as_sf(pgj , coords = c('longitud','latitud') , crs = 4326), 32614)
 
+# ===== SSC =====
+ssc <- read.csv('data/SSC.csv' , sep = ',', encoding = 'UTF-8', stringsAsFactors = FALSE)
+ssc <- clean_names(ssc , 'snake')
+# =
+ssc$fecha_evento <- dates(ssc$fecha_evento , format = 'y-m-d')
+ssc$hora_evento <- times(paste0(ifelse(nchar(ssc$hora2) == 1 , paste0('0',ssc$hora2) , ssc$hora2) , ':' , ifelse(str_sub(ssc$hora_evento , -1) == '.' , substr(ssc$hora_evento , 4 , 5) , str_sub(ssc$hora_evento , -2)) , ':00'))
+ssc$timestamp <- chron(ssc$fecha_evento , ssc$hora_evento)
+# =
+ssc['no_folio'] <- as.character(ssc$no_folio)
+ssc$no_folio[ssc$no_folio == 'SD'] <- paste0('SinID_', seq(1:nrow(filter(ssc , no_folio == 'SD'))))
+tmp <- filter(as.data.frame(table(ssc$no_folio) , stringsAsFactors = FALSE) , Freq > 1)
+for (i in tmp$Var1) {
+  ssc$no_folio[ssc$no_folio == i] <- paste0(i, '_' , seq(1:tmp[tmp$Var1 == i,]$Freq))
+}
+rm(tmp , i)
+# =
+ssc <- filter(ssc , !is.na(coordenada_y) & !is.na(coordenada_x))
+ssc <- filter(ssc , !is.na(timestamp))
+# =
+ssc <- st_transform(st_as_sf(ssc , coords = c('coordenada_x','coordenada_y') , crs = 4326), 32614)
+
+# ===== C5 =====
+c5 <- read.csv('data/C5.csv' , sep = ',', encoding = 'UTF-8', stringsAsFactors = FALSE)
+# =
+c5['hora_creacion'] <- times(c5$hora_creacion)
+c5['fecha_creacion'] <- dates(as.character(c5$fecha_creacion), format = 'd/m/y')
+c5['timestamp'] <- chron(c5$fecha_creacion , c5$hora_creacion)
+c5 <- filter(c5 , timestamp >= dates('2014-01-01' , format = 'y-m-d'))
+# =
+c5['geopoint'] <- NULL
+c5 <- filter(c5 , !is.na(latitud) & !is.na(longitud))
+c5 <- filter(c5 , !is.na(timestamp))
+# =
+c5 <- st_transform(st_as_sf(c5 , coords = c('longitud','latitud') , crs = 4326), 32614)
+
+# ===== AXA =====
+axa <- read.csv('data/AXA.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
+# =
+axa['hora'] <- times(paste0(axa$hora, ':01:00'))
+axa['mes'] <- as.character(axa$mes)
+axa$mes[axa$mes == 'ENERO'] <- 1
+axa$mes[axa$mes == 'FEBRERO'] <- 2
+axa$mes[axa$mes == 'MARZO'] <- 3
+axa$mes[axa$mes == 'ABRIL'] <- 4
+axa$mes[axa$mes == 'MAYO'] <- 5
+axa$mes[axa$mes == 'JUNIO'] <- 6
+axa$mes[axa$mes == 'JULIO'] <- 7
+axa$mes[axa$mes == 'AGOSTO'] <- 8
+axa$mes[axa$mes == 'SEPTIEMBRE'] <- 9
+axa$mes[axa$mes == 'OCTUBRE'] <- 10
+axa$mes[axa$mes == 'NOVIEMBRE'] <- 11
+axa$mes[axa$mes == 'DICIEMBRE'] <- 12
+axa['fecha'] <- dates(paste0(axa$dia_numero , '/' , axa$mes , '/' , axa$ao) , format = 'd/m/y')
+axa['timestamp'] <- chron(axa$fecha , axa$hora)
+# =
+axa['causa_siniestro'] <- as.character(axa$causa_siniestro)
+axa$causa_siniestro[axa$causa_siniestro == '\\N'] <- paste0('SinID_', seq(1:nrow(filter(axa , causa_siniestro == '\\N'))))
+axa <- filter(axa , !is.na(latitud) & !is.na(longitud))
+axa <- filter(axa , !is.na(timestamp))
+# =
+axa <- st_transform(st_as_sf(axa , coords = c('longitud','latitud') , crs = 4326), 32614)
+
+# ===== Repubikla =====
+repubikla <- read.csv('data/repubikla.csv' , sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE)
+# =
+repubikla['hora'] <- times(paste0(as.character(repubikla$hora), ':00'))
+repubikla['fecha'] <- dates(as.character(repubikla$fecha) , format = 'y-m-d')
+repubikla['timestamp'] <- chron(repubikla$fecha , repubikla$hora)
+repubikla <- filter(repubikla , !is.na(lat) & !is.na(lon))
+repubikla <- filter(repubikla , !is.na(timestamp))
+# =
+repubikla <- st_transform(st_as_sf(repubikla , coords = c('lon','lat') , crs = 4326), 32614)
 # ===== FRONT END =====
 ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI', skin = 'green',
   dashboardHeader(title = 'Incidentes Viales'),
@@ -897,7 +894,7 @@ server <- function(input, output, session) {
   # ===== EVENTOS DEL MAPA =====
   output$mapa <- renderLeaflet({
     if (input$filtro_lugar == 'Total Ciudad de México') {
-      lugar <- cdmx_sa
+      lugar <- cdmx
       lon <- -99.152613
       lat <- 19.320497
       zoom <- 11
