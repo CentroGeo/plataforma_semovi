@@ -2656,7 +2656,7 @@ server <- function(input, output, session) {
         if (input$tiempo_grafica == 'Por Mes') {
           if (length(unique(count_final$etiqueta)) > 3) {
             grafica = grafica +
-              geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 2) +
+              geom_line(data = count_final , aes(x = ref , y = n , color = categoria) , size = 1.5) +
               scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
                                  minor_breaks = NULL,
                                  labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
@@ -2665,7 +2665,8 @@ server <- function(input, output, session) {
                                  name = 'Fuente de Datos' ,
                                  labels = unique(count_final$categoria)) +
               ylim(0 , NA) +
-              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes')
+              labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Mes') +
+              theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
           }
           else {
             grafica = grafica +
@@ -2682,7 +2683,7 @@ server <- function(input, output, session) {
         }
         else if (input$tiempo_grafica == 'Por Día') {
           grafica = grafica +
-            geom_line(data = count_final , aes(x = ref , y = n , color = categoria), alpha = 0.2) +
+            geom_line(data = count_final , aes(x = ref , y = n , color = categoria), alpha = 0.2, size = 1.5) +
             geom_smooth(data = count_final , aes(x = ref , y = n , color = categoria), method = 'loess' , formula = 'y ~ x' , se = FALSE , size = 2 , na.rm = TRUE) +
             scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
                                minor_breaks = NULL,
@@ -2692,7 +2693,8 @@ server <- function(input, output, session) {
                                name = 'Fuente de Datos' ,
                                labels = unique(count_final$categoria)) +
             ylim(0 , NA) +
-            labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Día')
+            labs(x = 'Mes' , y = 'Número de Incidentes' , title = 'Número de Incidentes por Día') +
+            theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
         }
       }
     }

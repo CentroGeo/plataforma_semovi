@@ -40,8 +40,8 @@ vignettes/*.pdf
 # R package: bookdown caching files
 /*_files/
 
-vinculador/data
+# vinculador/data
 vinculador/tmp
-visualizador/data
-visualizador/www/tmp.png
-visualizador/www/img
+# visualizador/data
+# visualizador/www/tmp.png
+# visualizador/www/img
