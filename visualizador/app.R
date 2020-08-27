@@ -1,7 +1,16 @@
 # Visualizador de SEMOVI
+
+# Cargar dependencias
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(shiny, sf, tidyverse, leaflet, chron, lubridate, readxl, jsonlite,
 shinycssloaders, shinydashboard, shinyjs, leaflet.extras, htmltools, janitor)
+
+# Cargar funciones
+funcs <- c("get_final_counts")
+for (f in funcs) {
+  if (!exists(f, mode = "function")) source("functions.R")
+}
+
 
 # library(shiny)
 # library(sf)
@@ -2777,6 +2786,7 @@ server <- function(input, output, session) {
     is_graph <- FALSE
     if (input$tipo_grafica2 != '') {
       if (input$tipo_grafica2 == 'Gráficas Combinadas' & !is.null(filtro_bd_sp()) & !is.null(input$tiempo_grafica2)) {
+        # Aquí es cuando hay más de una base seleccionada
         is_graph <- TRUE
         paleta = c()
         if ('PGJ' %in% filtro_bd_sp()) paleta <- append(paleta , '#952800')
@@ -2830,58 +2840,63 @@ server <- function(input, output, session) {
       }
       else if (input$tipo_grafica2 == 'PGJ' & !is.null(input$subgrafica_pgj2) & !is.null(bd$tmp_pgj)) {
         is_graph <- TRUE
-        if (input$subgrafica_pgj2 == 'Sin Categoría') paleta <- c('#952800')
-        else paleta <- c('#97173A' , '#7F2B5F' , '#593E70' , '#36476B' , '#2F4858' , '#C03C7A' , '#B65FB2' , '#9682DD' , '#65A3F8')
-        # =
-        max <- 0
-        tmp <- bd$tmp_pgj
-        tmp$geometry <- NULL
-        if (!is.null(tmp)) {
-          if (nrow(tmp) != 0) {
-            if (input$subgrafica_pgj2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_pgj2 == 'Delito') max <- ceiling(max(count(tmp , wday(timestamp) , delito)$n)/10)*10
-          }}
-        # =
-        if (!is.null(tmp)) {
-          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
-          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
-          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
-        }
-        # =
-        if (nrow(tmp) == 0) {
-          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
-        } 
-        else if (input$subgrafica_pgj2 == 'Sin Categoría') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-          count$categoria <- 'PGJ'
-        }
-        else if (input$subgrafica_pgj2 == 'Delito') {
-          count <- count(tmp , wday(timestamp) , delito) %>% rename('ref'='wday(timestamp)' , 'categoria'='delito')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        # =
-        count$etiqueta <- count$ref
-        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
-        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
-        count$etiqueta[count$etiqueta == 3] <- 'Martes'
-        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
-        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
-        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
-        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
-        # =
-        count$ref <- as.integer(count$ref)
-        count$n <- as.integer(count$n)
-        count <- count[order(count$ref),]
-        # =
-        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
+        print(input)
+        count_final <- get_final_counts(bd$tmp_pgj, input)
+        # if (input$subgrafica_pgj2 == 'Sin Categoría') paleta <- c('#952800')
+        # # categoría cuando tienes más de un tipo  de gráfica
+        # else paleta <- c('#97173A' , '#7F2B5F' , '#593E70' , '#36476B' , '#2F4858' , '#C03C7A' , '#B65FB2' , '#9682DD' , '#65A3F8')
+        # # =
+        # max <- 0
+        # tmp <- bd$tmp_pgj
+        # #print(head(tmp))
+        # tmp$geometry <- NULL
+        # if (!is.null(tmp)) {
+        #   if (nrow(tmp) != 0) {
+        #     if (input$subgrafica_pgj2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+        #     else if (input$subgrafica_pgj2 == 'Delito') max <- ceiling(max(count(tmp , wday(timestamp) , delito)$n)/10)*10
+        #   }}
+        # # =
+        # if (!is.null(tmp)) {
+        #   if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
+        #   else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
+        #   else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
+        # }
+        # # =
+        # if (nrow(tmp) == 0) {
+        #   count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
+        #   for (i in seq(7)) {
+        #     if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
+        # } 
+        # else if (input$subgrafica_pgj2 == 'Sin Categoría') {
+        #   count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
+        #   for (i in seq(7)) {
+        #     if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
+        #   count$categoria <- 'PGJ'
+        # }
+        # else if (input$subgrafica_pgj2 == 'Delito') {
+        #   count <- count(tmp , wday(timestamp) , delito) %>% rename('ref'='wday(timestamp)' , 'categoria'='delito')
+        #   for (i in seq(7)) {
+        #     for (cat in unique(count$categoria)) {
+        #       if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
+        #     }}
+        #   count$categoria <- str_to_title(count$categoria , locale = 'es')
+        # }
+        # # =
+        # count$etiqueta <- count$ref
+        # count$etiqueta[count$etiqueta == 1] <- 'Domingo'
+        # count$etiqueta[count$etiqueta == 2] <- 'Lunes'
+        # count$etiqueta[count$etiqueta == 3] <- 'Martes'
+        # count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
+        # count$etiqueta[count$etiqueta == 5] <- 'Jueves'
+        # count$etiqueta[count$etiqueta == 6] <- 'Viernes'
+        # count$etiqueta[count$etiqueta == 7] <- 'Sábado'
+        # # =
+        # count$ref <- as.integer(count$ref)
+        # count$n <- as.integer(count$n)
+        # count <- count[order(count$ref),]
+        # #print(head(count))
+        # # =
+        # count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
       }
       else if (input$tipo_grafica2 == 'SSC' & !is.null(input$subgrafica_ssc2) & !is.null(bd$tmp_ssc)) {
         is_graph <- TRUE
@@ -3165,6 +3180,7 @@ server <- function(input, output, session) {
       # =====
       if (is_graph == TRUE) {
         if (max == 0) max <- NA
+        #print(head(count_final))
         grafica = grafica +
           geom_col(data = count_final , aes(x = ref , y = n , fill = categoria) , position = 'dodge') +
           scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
