@@ -119,6 +119,9 @@ repubikla <- filter(repubikla , !is.na(lat) & !is.na(lon))
 repubikla <- filter(repubikla , !is.na(timestamp))
 # =
 repubikla <- st_transform(st_as_sf(repubikla , coords = c('lon','lat') , crs = 4326), 32614)
+# ===== FINAL DE OPERACIONES INICIALES =====
+
+
 # ===== FRONT END =====
 ui <- dashboardPage(title = 'Visualizador de Datos de Incidentes Viales - SEMOVI', skin = 'green',
   dashboardHeader(title = 'Incidentes Viales'),
@@ -2840,11 +2843,9 @@ server <- function(input, output, session) {
       }
       else if (input$tipo_grafica2 == 'PGJ' & !is.null(input$subgrafica_pgj2) & !is.null(bd$tmp_pgj)) {
         is_graph <- TRUE
-        print(input)
         count_final <- get_final_counts(bd$tmp_pgj, input)
-        # if (input$subgrafica_pgj2 == 'Sin Categoría') paleta <- c('#952800')
-        # # categoría cuando tienes más de un tipo  de gráfica
-        # else paleta <- c('#97173A' , '#7F2B5F' , '#593E70' , '#36476B' , '#2F4858' , '#C03C7A' , '#B65FB2' , '#9682DD' , '#65A3F8')
+        if (input$subgrafica_pgj2 == 'Sin Categoría') paleta <- c('#952800')
+        else paleta <- c('#97173A' , '#7F2B5F' , '#593E70' , '#36476B' , '#2F4858' , '#C03C7A' , '#B65FB2' , '#9682DD' , '#65A3F8')
         # # =
         # max <- 0
         # tmp <- bd$tmp_pgj
@@ -3178,14 +3179,14 @@ server <- function(input, output, session) {
         count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
       }
       # =====
+      print("graficaaaaaaaaaaaaa")
       if (is_graph == TRUE) {
         if (max == 0) max <- NA
-        #print(head(count_final))
         grafica = grafica +
           geom_col(data = count_final , aes(x = ref , y = n , fill = categoria) , position = 'dodge') +
-          scale_x_continuous(breaks = unique(count_final$ref[!is.na(count$etiqueta)]),
+          scale_x_continuous(breaks = unique(count_final$ref[!is.na(count_final$etiqueta)]),
                              minor_breaks = NULL,
-                             labels = unique(count_final$etiqueta[!is.na(count$etiqueta)])) +
+                             labels = unique(count_final$etiqueta[!is.na(count_final$etiqueta)])) +
           scale_fill_manual(values = paleta,
                              limits = unique(count_final$categoria),
                              name = 'Fuente de Datos' ,
