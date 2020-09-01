@@ -5,11 +5,13 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(shiny, sf, tidyverse, leaflet, chron, lubridate, readxl, jsonlite,
 shinycssloaders, shinydashboard, shinyjs, leaflet.extras, htmltools, janitor)
 
+
+source("functions.R")
 # Cargar funciones
-funcs <- c("get_final_counts")
-for (f in funcs) {
-  if (!exists(f, mode = "function")) source("functions.R")
-}
+# funcs <- c("get_final_counts")
+# for (f in funcs) {
+#   if (!exists(f, mode = "function")) source("functions.R")
+# }
 
 
 # library(shiny)
@@ -2842,19 +2844,54 @@ server <- function(input, output, session) {
         }
       }
       else if (input$tipo_grafica2 == 'PGJ' & !is.null(input$subgrafica_pgj2) & !is.null(bd$tmp_pgj)) {
+        ###########--PGJ SOLA--###################"
         is_graph <- TRUE
-        count_final <- get_final_counts(bd$tmp_pgj, input)
+        max <- 0
+        count_final <- get_final_counts(bd$tmp_pgj, input, "PGJ")
         if (input$subgrafica_pgj2 == 'Sin Categoría') paleta <- c('#952800')
         else paleta <- c('#97173A' , '#7F2B5F' , '#593E70' , '#36476B' , '#2F4858' , '#C03C7A' , '#B65FB2' , '#9682DD' , '#65A3F8')
-        # # =
-        # max <- 0
-        # tmp <- bd$tmp_pgj
-        # #print(head(tmp))
+      }
+      else if (input$tipo_grafica2 == 'SSC' & !is.null(input$subgrafica_ssc2) & !is.null(bd$tmp_ssc)) {
+        ###########--SSC SOLA--###################"
+        is_graph <- TRUE
+        max <- 0
+        count_final <- get_final_counts(bd$tmp_ssc, input, "SSC")
+        if (input$subgrafica_ssc2 == 'Sin Categoría') paleta <- c('#043A5F')
+        else paleta <- c('#006386' , '#008E97' , '#00B891' , '#8CDC7D' , '#F9F871' , '#6B6399' , '#9B77B0' , '#CC8BC3' , '#FDA1D1')
+        # =
+        
+      }
+      else if (input$tipo_grafica2 == 'C5' & !is.null(input$subgrafica_c52) & !is.null(bd$tmp_c5)) {
+        ###########--C5 SOLA--###################
+        is_graph <- TRUE
+        max <- 0
+        count_final <- get_final_counts(bd$tmp_c5, input, "C5")
+        if (input$subgrafica_c52 == 'Sin Categoría') paleta <- c('#956F00')
+        else paleta <- c('#956F00', '#5D731D' , '#276E40' , '#006459' , '#015762' , '#2F4858' , '#C2A573' , '#FFEECB' , '#00C9B1' , '#4E4637' , '#B5AA99' , '#987061' , '#FFC1B2' , '#FE8A7D' , '#C1554C' ,
+                         '#a78e72' , '#e48d24' , '#725238' , '#e1b53f' , '#7f6342' , '#e6c392' , '#715c09' , '#dda25a' , '#895c1d' , '#ad8220' , '#a2814d' , '#b2712f')
+      }
+      else if (input$tipo_grafica2 == 'AXA' & !is.null(input$subgrafica_axa2) & !is.null(bd$tmp_axa)) {
+        ###########--AXA SOLA--###################
+        is_graph <- TRUE
+        if (input$subgrafica_axa2 == 'Sin Categoría') paleta <- c('#5E0061')
+        else paleta <- c('#5E0061' , '#A1145F' , '#D44755' , '#F37F4B' , '#FFBB4F' , '#F9F871' , '#474197' , '#006CBD' , '#36D9D3' , '#7D527C' , '#FFE7FF')
+        # =
+        max <- 0
+        count_final <- get_final_counts(bd$tmp_axa, input, "AXA")
+      }
+      else if (input$tipo_grafica2 == 'Repubikla' & !is.null(input$subgrafica_repubikla2) & !is.null(bd$tmp_repubikla)) {
+        ###########--Repubikla SOLA--###################
+        is_graph <- TRUE
+        if (input$subgrafica_repubikla2 == 'Sin Categoría') paleta <- c('#3F8500')
+        else paleta <- c('#3F8500' , '#00735C' , '#00666B' , '#005769' , '#2F4858' , '#008DA8' , '#008ABF' , '#97B27E' , '#E4F7D2' , '#5CB7D5')
+        # =
+        max <- 0
+        # tmp <- bd$tmp_repubikla
         # tmp$geometry <- NULL
         # if (!is.null(tmp)) {
         #   if (nrow(tmp) != 0) {
-        #     if (input$subgrafica_pgj2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-        #     else if (input$subgrafica_pgj2 == 'Delito') max <- ceiling(max(count(tmp , wday(timestamp) , delito)$n)/10)*10
+        #     if (input$subgrafica_repubikla2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
+        #     else if (input$subgrafica_repubikla2 == 'Modo') max <- ceiling(max(count(tmp , wday(timestamp) , modo)$n)/10)*10
         #   }}
         # # =
         # if (!is.null(tmp)) {
@@ -2868,14 +2905,14 @@ server <- function(input, output, session) {
         #   for (i in seq(7)) {
         #     if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
         # } 
-        # else if (input$subgrafica_pgj2 == 'Sin Categoría') {
+        # else if (input$subgrafica_repubikla2 == 'Sin Categoría') {
         #   count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
         #   for (i in seq(7)) {
         #     if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-        #   count$categoria <- 'PGJ'
+        #   count$categoria <- 'Repubikla'
         # }
-        # else if (input$subgrafica_pgj2 == 'Delito') {
-        #   count <- count(tmp , wday(timestamp) , delito) %>% rename('ref'='wday(timestamp)' , 'categoria'='delito')
+        # else if (input$subgrafica_repubikla2 == 'Modo') {
+        #   count <- count(tmp , wday(timestamp) , modo) %>% rename('ref'='wday(timestamp)' , 'categoria'='modo')
         #   for (i in seq(7)) {
         #     for (cat in unique(count$categoria)) {
         #       if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
@@ -2895,293 +2932,12 @@ server <- function(input, output, session) {
         # count$ref <- as.integer(count$ref)
         # count$n <- as.integer(count$n)
         # count <- count[order(count$ref),]
-        # #print(head(count))
         # # =
         # count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
       }
-      else if (input$tipo_grafica2 == 'SSC' & !is.null(input$subgrafica_ssc2) & !is.null(bd$tmp_ssc)) {
-        is_graph <- TRUE
-        if (input$subgrafica_ssc2 == 'Sin Categoría') paleta <- c('#043A5F')
-        else paleta <- c('#006386' , '#008E97' , '#00B891' , '#8CDC7D' , '#F9F871' , '#6B6399' , '#9B77B0' , '#CC8BC3' , '#FDA1D1')
-        # =
-        max <- 0
-        tmp <- bd$tmp_ssc
-        tmp$geometry <- NULL
-        if (!is.null(tmp)) {
-          if (nrow(tmp) != 0) {
-            if (input$subgrafica_ssc2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_ssc2 == 'Tipo de Evento') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_de_evento)$n)/10)*10
-            else if (input$subgrafica_ssc2 == 'Identidad') max <- (ceiling(max(count(tmp , wday(timestamp) , identidad)$n)/10)*10) + 5
-          }}
-        # =
-        if (!is.null(tmp)) {
-          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
-          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
-          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
-        }
-        # =
-        if (nrow(tmp) == 0) {
-          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
-        } 
-        else if (input$subgrafica_ssc2 == 'Sin Categoría') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-          count$categoria <- 'SSC'
-        }
-        else if (input$subgrafica_ssc2 == 'Tipo de Evento') {
-          count <- count(tmp , wday(timestamp) , tipo_de_evento) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_de_evento')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        else if (input$subgrafica_ssc2 == 'Identidad') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)' )
-          weekdays <- unique(count$ref)
-          count <- data.frame(ref = as.integer() , categoria = as.character() , n = as.integer() , stringsAsFactors = FALSE)
-          for (wd in weekdays) {
-            tmp2 <- filter(tmp , wday(timestamp) == wd)
-            if (nrow(tmp2) != 0) {
-              tmp2 <- as.data.frame(table(unlist(strsplit(tmp2$identidad , ' '))) , stringsAsFactors = FALSE) %>% rename('categoria'='Var1' , 'n'='Freq')
-              tmp2$ref <- wd
-              tmp2 <- tmp2 %>% select(ref , categoria , n)
-              count <- rbind(count , tmp2)
-            }
-          }
-          # =====
-          # count <- count(tmp , wday(timestamp) , identidad) %>% rename('ref'='wday(timestamp)' , 'categoria'='identidad')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        # =
-        count$etiqueta <- count$ref
-        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
-        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
-        count$etiqueta[count$etiqueta == 3] <- 'Martes'
-        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
-        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
-        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
-        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
-        # =
-        count$ref <- as.integer(count$ref)
-        count$n <- as.integer(count$n)
-        count <- count[order(count$ref),]
-        # =
-        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
-      }
-      else if (input$tipo_grafica2 == 'C5' & !is.null(input$subgrafica_c52) & !is.null(bd$tmp_c5)) {
-        is_graph <- TRUE
-        if (input$subgrafica_c52 == 'Sin Categoría') paleta <- c('#956F00')
-        else paleta <- c('#956F00', '#5D731D' , '#276E40' , '#006459' , '#015762' , '#2F4858' , '#C2A573' , '#FFEECB' , '#00C9B1' , '#4E4637' , '#B5AA99' , '#987061' , '#FFC1B2' , '#FE8A7D' , '#C1554C' ,
-                         '#a78e72' , '#e48d24' , '#725238' , '#e1b53f' , '#7f6342' , '#e6c392' , '#715c09' , '#dda25a' , '#895c1d' , '#ad8220' , '#a2814d' , '#b2712f')
-        # =
-        max <- 0
-        tmp <- bd$tmp_c5
-        tmp$geometry <- NULL
-        if (!is.null(tmp)) {
-          if (nrow(tmp) != 0) {
-            if (input$subgrafica_c52 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_c52 == 'Incidente C4') max <- ceiling(max(count(tmp , wday(timestamp) , incidente_c4)$n)/10)*10
-            else if (input$subgrafica_c52 == 'Clase del Incidente') max <- ceiling(max(count(tmp , wday(timestamp) , clas_con_f_alarma)$n)/10)*10
-            else if (input$subgrafica_c52 == 'Tipo de Entrada') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_entrada)$n)/10)*10
-          }}
-        # =
-        if (!is.null(tmp)) {
-          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
-          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
-          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
-        }
-        # =
-        if (nrow(tmp) == 0) {
-          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
-        } 
-        else if (input$subgrafica_c52 == 'Sin Categoría') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-          count$categoria <- 'C5'
-        }
-        else if (input$subgrafica_c52 == 'Incidente C4') {
-          count <- count(tmp , wday(timestamp) , incidente_c4) %>% rename('ref'='wday(timestamp)' , 'categoria'='incidente_c4')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        else if (input$subgrafica_c52 == 'Clase del Incidente') {
-          count <- count(tmp , wday(timestamp) , clas_con_f_alarma) %>% rename('ref'='wday(timestamp)' , 'categoria'='clas_con_f_alarma')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        else if (input$subgrafica_c52 == 'Tipo de Entrada') {
-          count <- count(tmp , wday(timestamp) , tipo_entrada) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_entrada')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        # =
-        count$etiqueta <- count$ref
-        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
-        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
-        count$etiqueta[count$etiqueta == 3] <- 'Martes'
-        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
-        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
-        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
-        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
-        # =
-        count$ref <- as.integer(count$ref)
-        count$n <- as.integer(count$n)
-        count <- count[order(count$ref),]
-        # =
-        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
-      }
-      else if (input$tipo_grafica2 == 'AXA' & !is.null(input$subgrafica_axa2) & !is.null(bd$tmp_axa)) {
-        is_graph <- TRUE
-        if (input$subgrafica_axa2 == 'Sin Categoría') paleta <- c('#5E0061')
-        else paleta <- c('#5E0061' , '#A1145F' , '#D44755' , '#F37F4B' , '#FFBB4F' , '#F9F871' , '#474197' , '#006CBD' , '#36D9D3' , '#7D527C' , '#FFE7FF')
-        # =
-        max <- 0
-        tmp <- bd$tmp_axa
-        tmp$geometry <- NULL
-        if (!is.null(tmp)) {
-          if (nrow(tmp) != 0) {
-            if (input$subgrafica_axa2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_axa2 == 'Causa del Siniestro') max <- ceiling(max(count(tmp , wday(timestamp) , causa_siniestro)$n)/10)*10
-            else if (input$subgrafica_axa2 == 'Tipo de Vehículo') max <- ceiling(max(count(tmp , wday(timestamp) , tipo_vehiculo)$n)/10)*10
-            else if (input$subgrafica_axa2 == 'Rol del Lesionado') max <- ceiling(max(count(tmp , wday(timestamp) , relacion_lesionados)$n)/10)*10
-          }}
-        # =
-        if (!is.null(tmp)) {
-          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
-          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
-          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
-        }
-        # =
-        if (nrow(tmp) == 0) {
-          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
-        } 
-        else if (input$subgrafica_axa2 == 'Sin Categoría') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-          count$categoria <- 'AXA'
-        }
-        else if (input$subgrafica_axa2 == 'Causa del Siniestro') {
-          count <- count(tmp , wday(timestamp) , causa_siniestro) %>% rename('ref'='wday(timestamp)' , 'categoria'='causa_siniestro')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        else if (input$subgrafica_axa2 == 'Tipo de Vehículo') {
-          count <- count(tmp , wday(timestamp) , tipo_vehiculo) %>% rename('ref'='wday(timestamp)' , 'categoria'='tipo_vehiculo')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        else if (input$subgrafica_axa2 == 'Rol del Lesionado') {
-          count <- count(tmp , wday(timestamp) , relacion_lesionados) %>% rename('ref'='wday(timestamp)' , 'categoria'='relacion_lesionados')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        # =
-        count$etiqueta <- count$ref
-        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
-        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
-        count$etiqueta[count$etiqueta == 3] <- 'Martes'
-        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
-        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
-        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
-        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
-        # =
-        count$ref <- as.integer(count$ref)
-        count$n <- as.integer(count$n)
-        count <- count[order(count$ref),]
-        # =
-        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
-      }
-      else if (input$tipo_grafica2 == 'Repubikla' & !is.null(input$subgrafica_repubikla2) & !is.null(bd$tmp_repubikla)) {
-        is_graph <- TRUE
-        if (input$subgrafica_repubikla2 == 'Sin Categoría') paleta <- c('#3F8500')
-        else paleta <- c('#3F8500' , '#00735C' , '#00666B' , '#005769' , '#2F4858' , '#008DA8' , '#008ABF' , '#97B27E' , '#E4F7D2' , '#5CB7D5')
-        # =
-        max <- 0
-        tmp <- bd$tmp_repubikla
-        tmp$geometry <- NULL
-        if (!is.null(tmp)) {
-          if (nrow(tmp) != 0) {
-            if (input$subgrafica_repubikla2 == 'Sin Categoría') max <- ceiling(max(count(tmp , wday(timestamp))$n)/10)*10
-            else if (input$subgrafica_repubikla2 == 'Modo') max <- ceiling(max(count(tmp , wday(timestamp) , modo)$n)/10)*10
-          }}
-        # =
-        if (!is.null(tmp)) {
-          if (input$tiempo_grafica2 == 'Mañana (6AM - 12PM)') tmp <- filter(tmp , hour(timestamp) %in% c(6, 7, 8, 9, 10, 11, 12))
-          else if (input$tiempo_grafica2 == 'Tarde (1PM - 9PM)') tmp <- filter(tmp , hour(timestamp) %in% c(13, 14, 15, 16, 17, 18, 19, 20, 21))
-          else if (input$tiempo_grafica2 == 'Noche (10PM - 5AM)') tmp <- filter(tmp , hour(timestamp) %in% c(22, 23, 0, 1, 2, 3, 4, 5))
-        }
-        # =
-        if (nrow(tmp) == 0) {
-          count <- data.frame(ref = 1 , categoria = 'Sin Datos' , n = 0)
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 'Sin Datos' , 0)}
-        } 
-        else if (input$subgrafica_repubikla2 == 'Sin Categoría') {
-          count <- count(tmp , wday(timestamp)) %>% rename('ref'='wday(timestamp)')
-          for (i in seq(7)) {
-            if (nrow(count[count$ref == i,]) == 0) count[nrow(count) + 1,] <- c(i , 0)}
-          count$categoria <- 'Repubikla'
-        }
-        else if (input$subgrafica_repubikla2 == 'Modo') {
-          count <- count(tmp , wday(timestamp) , modo) %>% rename('ref'='wday(timestamp)' , 'categoria'='modo')
-          for (i in seq(7)) {
-            for (cat in unique(count$categoria)) {
-              if (nrow(count[count$ref == i & count$categoria == cat,]) == 0) count[nrow(count) + 1,] <- c(i , cat , 0)
-            }}
-          count$categoria <- str_to_title(count$categoria , locale = 'es')
-        }
-        # =
-        count$etiqueta <- count$ref
-        count$etiqueta[count$etiqueta == 1] <- 'Domingo'
-        count$etiqueta[count$etiqueta == 2] <- 'Lunes'
-        count$etiqueta[count$etiqueta == 3] <- 'Martes'
-        count$etiqueta[count$etiqueta == 4] <- 'Miércoles'
-        count$etiqueta[count$etiqueta == 5] <- 'Jueves'
-        count$etiqueta[count$etiqueta == 6] <- 'Viernes'
-        count$etiqueta[count$etiqueta == 7] <- 'Sábado'
-        # =
-        count$ref <- as.integer(count$ref)
-        count$n <- as.integer(count$n)
-        count <- count[order(count$ref),]
-        # =
-        count_final <- rbind(count_final , count %>% select(n , ref , etiqueta , categoria))
-      }
       # =====
-      print("graficaaaaaaaaaaaaa")
       if (is_graph == TRUE) {
-        if (max == 0) max <- NA
+        if (max == 0) max <- NA 
         grafica = grafica +
           geom_col(data = count_final , aes(x = ref , y = n , fill = categoria) , position = 'dodge') +
           scale_x_continuous(breaks = unique(count_final$ref[!is.na(count_final$etiqueta)]),
